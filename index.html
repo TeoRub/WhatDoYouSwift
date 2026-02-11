@@ -150,6 +150,7 @@
             display: block;
             margin: 10px 0;
             user-select: all;
+            word-break: break-all;
         }
 
         .copy-btn {
@@ -240,8 +241,8 @@
 
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
             margin: 20px 0;
         }
 
@@ -304,6 +305,11 @@
             text-align: center;
         }
 
+        .judge-card-selection h3 {
+            color: #856404;
+            margin-bottom: 20px;
+        }
+
         .image-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -324,11 +330,6 @@
             border-color: #667eea;
             transform: scale(1.05);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .image-card.selected {
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
         }
 
         .image-card img {
@@ -354,8 +355,8 @@
             background: #d1ecf1;
             border: 2px solid #bee5eb;
             color: #0c5460;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 15px;
             margin: 20px 0;
             text-align: center;
         }
@@ -374,6 +375,7 @@
             h1 { font-size: 2rem; }
             .cards-grid { grid-template-columns: 1fr; }
             .game-header { flex-direction: column; }
+            .game-code-value { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -399,7 +401,7 @@
 
             <div class="input-group">
                 <label>Codice Partita</label>
-                <input type="text" id="game-code-input" placeholder="Inserisci il codice" maxlength="20">
+                <input type="text" id="game-code-input" placeholder="Inserisci il codice">
             </div>
 
             <button class="btn btn-secondary" onclick="joinGame()">
@@ -428,7 +430,7 @@
             <div id="status-container"></div>
 
             <div class="players-list">
-                <h3>Giocatori (<span id="player-count">1</span>/8)</h3>
+                <h3>Giocatori (<span id="player-count">0</span>/8)</h3>
                 <div id="players-container"></div>
             </div>
 
@@ -454,7 +456,7 @@
                 <div class="scores" id="scores-container"></div>
             </div>
 
-            <div class="image-container">
+            <div class="image-container" id="image-container-game" style="display: none;">
                 <img id="current-meme" src="" alt="Meme">
             </div>
 
@@ -463,7 +465,6 @@
     </div>
 
     <script>
-        // Game constants
         const MEME_IMAGES = [
             { url: 'https://i.imgflip.com/30b1gx.jpg', alt: 'Drake Hotline Bling' },
             { url: 'https://i.imgflip.com/1bij.jpg', alt: 'Distracted Boyfriend' },
@@ -563,6 +564,7 @@
             "Quando senti una canzone triste e la metti in loop per soffrire meglio","Quando parli con te stesso e perdi comunque la discussione",
             "Quando l'oroscopo ti dice di avere pazienza ma sei già esploso","Qundo il tuo amico dice \"fidati di me\" e tu prepari gia il disastro",
             "Quando cerchi di sembraer maturo ma ti emozioni per le caramelle","Quando sei l'unico single al tavolo e sorridi per non piangere",
+            /*"","",
             "","",
             "","",
             "","",
@@ -625,29 +627,29 @@
             "","",
             "","",
             "","",
-            "","",
-            "","",
+            "","",*/
         ];
 
-        // Game state
         let peer = null;
         let myPeerId = null;
         let connections = {};
         let isHost = false;
         let playerName = '';
+        let hostConnection = null;
+        
         let gameState = {
             players: [],
             currentRound: 0,
             judgeIndex: 0,
             currentImage: null,
-            phase: 'lobby', // lobby, judge-selecting, submitting, voting, results
+            phase: 'lobby',
             submissions: [],
             myCards: [],
             selectedCard: null
         };
 
-        // Initialize PeerJS
-        function initPeer() {
+        function initPeer(callback) {
+            console.log('Initializing PeerJS...');
             peer = new Peer({
                 config: {
                     iceServers: [
@@ -660,18 +662,20 @@
             peer.on('open', (id) => {
                 myPeerId = id;
                 console.log('My peer ID:', id);
+                if (callback) callback();
             });
 
             peer.on('connection', (conn) => {
+                console.log('Incoming connection from:', conn.peer);
                 handleConnection(conn);
             });
 
             peer.on('error', (err) => {
-                showError('Errore di connessione: ' + err.message);
+                console.error('Peer error:', err);
+                showError('Errore di connessione: ' + err.type);
             });
         }
 
-        // Create game
         function createGame() {
             playerName = document.getElementById('player-name').value.trim();
             if (!playerName) {
@@ -679,26 +683,24 @@
                 return;
             }
 
-            initPeer();
-            isHost = true;
-
-            peer.on('open', (id) => {
-                myPeerId = id;
+            initPeer(() => {
+                isHost = true;
                 gameState.players = [{
                     id: myPeerId,
                     name: playerName,
                     score: 0,
                     ready: false,
-                    isHost: true
+                    isHost: true,
+                    cards: []
                 }];
 
                 showScreen('lobby-screen');
                 document.getElementById('room-code').textContent = myPeerId;
                 updatePlayersUI();
+                showStatus('In attesa di giocatori...');
             });
         }
 
-        // Join game
         function joinGame() {
             playerName = document.getElementById('player-name').value.trim();
             const roomCode = document.getElementById('game-code-input').value.trim();
@@ -708,116 +710,154 @@
                 return;
             }
 
-            initPeer();
-            isHost = false;
-
-            peer.on('open', (id) => {
-                myPeerId = id;
+            initPeer(() => {
+                isHost = false;
+                showStatus('Connessione in corso...');
+                
                 const conn = peer.connect(roomCode);
+                hostConnection = conn;
                 handleConnection(conn);
 
                 conn.on('open', () => {
+                    console.log('Connected to host');
                     conn.send({
                         type: 'join',
-                        player: { id: myPeerId, name: playerName, score: 0, ready: false }
+                        player: { 
+                            id: myPeerId, 
+                            name: playerName, 
+                            score: 0, 
+                            ready: false,
+                            cards: []
+                        }
                     });
                     showScreen('lobby-screen');
                     document.getElementById('room-code').textContent = roomCode;
                 });
+
+                conn.on('error', (err) => {
+                    console.error('Connection error:', err);
+                    showError('Impossibile connettersi alla partita');
+                });
             });
         }
 
-        // Handle P2P connections
         function handleConnection(conn) {
             connections[conn.peer] = conn;
 
             conn.on('data', (data) => {
+                console.log('Received:', data.type, data);
                 handleMessage(data, conn);
             });
 
             conn.on('close', () => {
+                console.log('Connection closed:', conn.peer);
                 delete connections[conn.peer];
-                gameState.players = gameState.players.filter(p => p.id !== conn.peer);
-                updatePlayersUI();
+                
+                if (isHost) {
+                    gameState.players = gameState.players.filter(p => p.id !== conn.peer);
+                    broadcast({ type: 'players-update', players: gameState.players });
+                    updatePlayersUI();
+                }
+            });
+
+            conn.on('error', (err) => {
+                console.error('Connection error:', err);
             });
         }
 
-        // Handle messages
         function handleMessage(data, conn) {
-            switch (data.type) {
-                case 'join':
-                    if (isHost) {
-                        gameState.players.push(data.player);
-                        broadcast({ type: 'players-update', players: gameState.players });
-                        conn.send({ type: 'players-update', players: gameState.players });
-                        updatePlayersUI();
-                    }
-                    break;
-
-                case 'players-update':
-                    gameState.players = data.players;
-                    updatePlayersUI();
-                    break;
-
-                case 'ready-toggle':
-                    const player = gameState.players.find(p => p.id === data.playerId);
-                    if (player) {
-                        player.ready = !player.ready;
+            try {
+                switch (data.type) {
+                    case 'join':
                         if (isHost) {
-                            broadcast({ type: 'players-update', players: gameState.players });
+                            console.log('Player joined:', data.player.name);
+                            gameState.players.push(data.player);
+                            
+                            // Send full state to new player
+                            conn.send({ type: 'players-update', players: gameState.players });
+                            
+                            // Notify all other players
+                            broadcast({ type: 'players-update', players: gameState.players }, conn.peer);
+                            
+                            updatePlayersUI();
                         }
+                        break;
+
+                    case 'players-update':
+                        console.log('Players update:', data.players);
+                        gameState.players = data.players;
                         updatePlayersUI();
-                    }
-                    break;
+                        break;
 
-                case 'start-game':
-                    startGameplay(data.gameData);
-                    break;
+                    case 'ready-toggle':
+                        if (isHost) {
+                            const player = gameState.players.find(p => p.id === data.playerId);
+                            if (player) {
+                                player.ready = !player.ready;
+                                broadcast({ type: 'players-update', players: gameState.players });
+                                updatePlayersUI();
+                            }
+                        }
+                        break;
 
-                case 'judge-select-image':
-                    if (isHost) {
-                        gameState.currentImage = data.image;
-                        gameState.phase = 'submitting';
-                        broadcast({ 
-                            type: 'game-update', 
-                            currentImage: data.image,
-                            phase: 'submitting'
-                        });
-                        updateGameUI();
-                    }
-                    break;
+                    case 'start-game':
+                        console.log('Game starting...');
+                        startGameplay(data.gameData);
+                        break;
 
-                case 'submit-card':
-                    gameState.submissions.push(data.submission);
-                    if (isHost && gameState.submissions.length === gameState.players.length - 1) {
-                        startVotingPhase();
-                    }
-                    break;
+                    case 'judge-select-image':
+                        if (isHost) {
+                            gameState.currentImage = data.image;
+                            gameState.phase = 'submitting';
+                            broadcast({ type: 'game-update', currentImage: data.image, phase: 'submitting' });
+                            updateGameUI();
+                        }
+                        break;
 
-                case 'vote':
-                    if (isHost) {
-                        handleVote(data.cardId);
-                    }
-                    break;
+                    case 'submit-card':
+                        if (isHost) {
+                            console.log('Card submitted:', data.submission);
+                            gameState.submissions.push(data.submission);
+                            
+                            const nonJudgePlayers = gameState.players.length - 1;
+                            if (gameState.submissions.length === nonJudgePlayers) {
+                                startVotingPhase();
+                            }
+                        }
+                        break;
 
-                case 'game-update':
-                    updateGameState(data);
-                    break;
+                    case 'vote':
+                        if (isHost) {
+                            handleVote(data.cardIndex);
+                        }
+                        break;
+
+                    case 'game-update':
+                        console.log('Game update:', data);
+                        updateGameState(data);
+                        break;
+                }
+            } catch (err) {
+                console.error('Error handling message:', err);
             }
         }
 
-        // Broadcast to all connections
-        function broadcast(data) {
-            Object.values(connections).forEach(conn => {
-                if (conn.open) {
-                    conn.send(data);
+        function broadcast(data, excludePeer = null) {
+            Object.keys(connections).forEach(peerId => {
+                if (peerId !== excludePeer && connections[peerId].open) {
+                    try {
+                        connections[peerId].send(data);
+                    } catch (err) {
+                        console.error('Error sending to', peerId, err);
+                    }
                 }
             });
         }
 
-        // UI Updates
         function updatePlayersUI() {
             const container = document.getElementById('players-container');
+            if (!container) return;
+            
             container.innerHTML = '';
 
             gameState.players.forEach(player => {
@@ -838,42 +878,46 @@
 
             document.getElementById('player-count').textContent = gameState.players.length;
 
-            // Show start button if host and all ready
             if (isHost) {
                 const allReady = gameState.players.every(p => p.ready) && gameState.players.length >= 3;
-                document.getElementById('start-game-btn').style.display = allReady ? 'block' : 'none';
+                const startBtn = document.getElementById('start-game-btn');
+                if (startBtn) {
+                    startBtn.style.display = allReady ? 'block' : 'none';
+                }
             }
         }
 
         function toggleReady() {
             const me = gameState.players.find(p => p.id === myPeerId);
-            if (me) {
-                me.ready = !me.ready;
-                if (isHost) {
-                    broadcast({ type: 'players-update', players: gameState.players });
-                } else {
-                    broadcast({ type: 'ready-toggle', playerId: myPeerId });
+            if (!me) return;
+            
+            me.ready = !me.ready;
+            
+            if (isHost) {
+                broadcast({ type: 'players-update', players: gameState.players });
+            } else {
+                if (hostConnection && hostConnection.open) {
+                    hostConnection.send({ type: 'ready-toggle', playerId: myPeerId });
                 }
-                updatePlayersUI();
             }
+            updatePlayersUI();
         }
 
         function startGame() {
             if (!isHost) return;
 
-            // Initialize game
+            console.log('Starting game...');
+            
             gameState.currentRound = 1;
-            gameState.judgeIndex = Math.floor(Math.random() * gameState.players.length); // Random judge
+            gameState.judgeIndex = Math.floor(Math.random() * gameState.players.length);
             gameState.phase = 'judge-selecting';
             gameState.submissions = [];
+            gameState.currentImage = null;
             
-            // Deal cards to all players
             gameState.players.forEach(player => {
                 player.cards = getRandomCards(7);
+                player.score = 0;
             });
-
-            // No image yet - judge will pick
-            gameState.currentImage = null;
 
             const gameData = {
                 players: gameState.players,
@@ -888,11 +932,12 @@
         }
 
         function startGameplay(data) {
-            gameState = { ...gameState, ...data };
+            console.log('Starting gameplay with data:', data);
             
-            // Get my cards
+            Object.assign(gameState, data);
+            
             const me = gameState.players.find(p => p.id === myPeerId);
-            if (me) {
+            if (me && me.cards) {
                 gameState.myCards = me.cards;
             }
 
@@ -902,22 +947,25 @@
 
         function updateGameUI() {
             document.getElementById('round-num').textContent = gameState.currentRound;
-            document.getElementById('judge-name').textContent = gameState.players[gameState.judgeIndex].name;
             
+            const judge = gameState.players[gameState.judgeIndex];
+            if (judge) {
+                document.getElementById('judge-name').textContent = judge.name;
+            }
+            
+            const imageContainer = document.getElementById('image-container-game');
             if (gameState.currentImage) {
                 document.getElementById('current-meme').src = gameState.currentImage.url;
-                document.getElementById('current-meme').style.display = 'block';
+                imageContainer.style.display = 'block';
             } else {
-                document.getElementById('current-meme').style.display = 'none';
+                imageContainer.style.display = 'none';
             }
 
-            // Update scores
             const scoresContainer = document.getElementById('scores-container');
             scoresContainer.innerHTML = gameState.players.map(p => 
-                `<span class="score-item">${p.name}: ${p.score}</span>`
+                `<span class="score-item">${p.name}: ${p.score || 0}</span>`
             ).join('');
 
-            // Render phase
             const contentDiv = document.getElementById('game-content');
             const isJudge = gameState.players[gameState.judgeIndex].id === myPeerId;
 
@@ -925,7 +973,7 @@
                 if (isJudge) {
                     renderJudgeImageSelection();
                 } else {
-                    contentDiv.innerHTML = '<div class="status-message"><h3>⏳ Il giudice sta scegliendo l\'immagine...</h3><p>Aspetta che ' + gameState.players[gameState.judgeIndex].name + ' scelga il meme!</p></div>';
+                    contentDiv.innerHTML = `<div class="status-message"><h3>⏳ Il giudice sta scegliendo l'immagine...</h3><p>Aspetta che ${judge.name} scelga il meme!</p></div>`;
                 }
             } else if (gameState.phase === 'submitting') {
                 if (isJudge) {
@@ -967,16 +1015,9 @@
             gameState.phase = 'submitting';
 
             if (isHost) {
-                broadcast({ 
-                    type: 'game-update', 
-                    currentImage: selectedImage,
-                    phase: 'submitting'
-                });
+                broadcast({ type: 'game-update', currentImage: selectedImage, phase: 'submitting' });
             } else {
-                broadcast({ 
-                    type: 'judge-select-image', 
-                    image: selectedImage
-                });
+                hostConnection.send({ type: 'judge-select-image', image: selectedImage });
             }
 
             updateGameUI();
@@ -986,7 +1027,7 @@
             const hasSubmitted = gameState.selectedCard !== null;
             const html = `
                 <h3 style="text-align: center; margin: 20px 0;">
-                    ${hasSubmitted ? '✓ Carta inviata! Aspetta gli altri...' : 'Scegli la tua carta:'}
+                    ${hasSubmitted ? '✓ Carta inviata! Aspetta gli altri...' : 'Scegli la tua carta migliore:'}
                 </h3>
                 <div class="cards-grid">
                     ${gameState.myCards.map((card, i) => `
@@ -1002,33 +1043,39 @@
         }
 
         function selectCard(index) {
+            if (gameState.selectedCard !== null) return;
+            
             gameState.selectedCard = index;
             const card = gameState.myCards[index];
             
-            broadcast({
-                type: 'submit-card',
-                submission: {
-                    playerId: myPeerId,
-                    playerName: playerName,
-                    card: card,
-                    cardIndex: index
+            const submission = {
+                playerId: myPeerId,
+                playerName: playerName,
+                card: card,
+                cardIndex: index
+            };
+
+            if (isHost) {
+                gameState.submissions.push(submission);
+                const nonJudgePlayers = gameState.players.length - 1;
+                if (gameState.submissions.length === nonJudgePlayers) {
+                    startVotingPhase();
                 }
-            });
+            } else {
+                hostConnection.send({ type: 'submit-card', submission });
+            }
 
             gameState.myCards.splice(index, 1);
             renderCardSelection();
         }
 
         function startVotingPhase() {
+            if (!isHost) return;
+            
             gameState.phase = 'voting';
             gameState.submissions.sort(() => Math.random() - 0.5);
             
-            broadcast({
-                type: 'game-update',
-                phase: 'voting',
-                submissions: gameState.submissions
-            });
-
+            broadcast({ type: 'game-update', phase: 'voting', submissions: gameState.submissions });
             updateGameUI();
         }
 
@@ -1050,47 +1097,46 @@
             if (isHost) {
                 handleVote(index);
             } else {
-                broadcast({ type: 'vote', cardId: index });
+                hostConnection.send({ type: 'vote', cardIndex: index });
             }
         }
 
         function handleVote(cardIndex) {
+            if (!isHost) return;
+            
             const winner = gameState.submissions[cardIndex];
             const winnerPlayer = gameState.players.find(p => p.id === winner.playerId);
+            
             if (winnerPlayer) {
-                winnerPlayer.score++;
+                winnerPlayer.score = (winnerPlayer.score || 0) + 1;
             }
 
             gameState.phase = 'results';
             gameState.lastWinner = winner;
 
-            broadcast({
-                type: 'game-update',
-                phase: 'results',
-                lastWinner: winner,
-                players: gameState.players
-            });
+            broadcast({ type: 'game-update', phase: 'results', lastWinner: winner, players: gameState.players });
+            updateGameUI();
 
             setTimeout(() => {
                 if (winnerPlayer && winnerPlayer.score >= 5) {
-                    alert(`🎉 ${winnerPlayer.name} ha vinto!`);
+                    alert(`🎉 ${winnerPlayer.name} ha vinto la partita!`);
                     location.reload();
                 } else {
                     nextRound();
                 }
             }, 5000);
-
-            updateGameUI();
         }
 
         function renderResults() {
+            if (!gameState.lastWinner) return;
+            
             const html = `
                 <div class="winner-card">
                     <h3>🏆 Vincitore del round:</h3>
                     <p style="font-size: 1.3rem; margin: 15px 0;">"${gameState.lastWinner.card}"</p>
                     <p>di <strong>${gameState.lastWinner.playerName}</strong></p>
                 </div>
-                <div style="text-align: center; color: #666; font-style: italic;">
+                <div style="text-align: center; color: #666; font-style: italic; margin-top: 20px;">
                     Prossimo round tra qualche secondo...
                 </div>
             `;
@@ -1101,42 +1147,44 @@
             if (!isHost) return;
 
             gameState.currentRound++;
-            gameState.judgeIndex = Math.floor(Math.random() * gameState.players.length); // Random judge each round
+            gameState.judgeIndex = Math.floor(Math.random() * gameState.players.length);
             gameState.phase = 'judge-selecting';
             gameState.submissions = [];
             gameState.selectedCard = null;
-            gameState.currentImage = null; // Judge will pick
+            gameState.currentImage = null;
 
-            // Deal new cards
             gameState.players.forEach(player => {
-                if (player.cards.length < 7) {
-                    const needed = 7 - player.cards.length;
-                    for (let i = 0; i < needed; i++) {
-                        player.cards.push(TEXT_CARDS[Math.floor(Math.random() * TEXT_CARDS.length)]);
-                    }
+                while (player.cards.length < 7) {
+                    player.cards.push(TEXT_CARDS[Math.floor(Math.random() * TEXT_CARDS.length)]);
                 }
             });
 
-            broadcast({
+            const updateData = {
                 type: 'game-update',
-                ...gameState
-            });
+                currentRound: gameState.currentRound,
+                judgeIndex: gameState.judgeIndex,
+                phase: gameState.phase,
+                currentImage: null,
+                submissions: [],
+                players: gameState.players
+            };
 
-            updateGameUI();
+            broadcast(updateData);
+            updateGameState(updateData);
         }
 
         function updateGameState(data) {
             Object.assign(gameState, data);
             
             const me = gameState.players.find(p => p.id === myPeerId);
-            if (me) {
+            if (me && me.cards) {
                 gameState.myCards = me.cards;
             }
             
+            gameState.selectedCard = null;
             updateGameUI();
         }
 
-        // Utility functions
         function getRandomCards(count) {
             const shuffled = [...TEXT_CARDS].sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
@@ -1144,25 +1192,44 @@
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+            const screen = document.getElementById(screenId);
+            if (screen) {
+                screen.classList.add('active');
+            }
         }
 
         function showError(msg) {
             const container = document.getElementById('error-container');
-            container.innerHTML = `<div class="error-message">${msg}</div>`;
-            setTimeout(() => container.innerHTML = '', 3000);
+            if (container) {
+                container.innerHTML = `<div class="error-message">${msg}</div>`;
+                setTimeout(() => container.innerHTML = '', 5000);
+            }
+            console.error(msg);
+        }
+
+        function showStatus(msg) {
+            const container = document.getElementById('status-container');
+            if (container) {
+                container.innerHTML = `<div class="status-message"><p>${msg}</p></div>`;
+            }
         }
 
         function copyRoomCode() {
             const code = document.getElementById('room-code').textContent;
             navigator.clipboard.writeText(code).then(() => {
-                alert('Codice copiato! 📋');
+                alert('Codice copiato negli appunti! 📋\nInvialo ai tuoi amici per farli unire.');
+            }).catch(() => {
+                alert('Codice: ' + code + '\n\nCopialo e invialo ai tuoi amici!');
             });
         }
 
         function leaveLobby() {
-            location.reload();
+            if (confirm('Vuoi davvero lasciare la partita?')) {
+                location.reload();
+            }
         }
+
+        console.log('Meme Game P2P loaded successfully!');
     </script>
 </body>
 </html>
