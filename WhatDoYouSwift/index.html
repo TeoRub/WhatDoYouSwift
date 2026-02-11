@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Game 🎮 - Multiplayer P2P</title>
+    <script src="https://unpkg.com/peerjs@1.5.0/dist/peerjs.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .divider {
+            margin: 20px 0;
+            color: #999;
+            position: relative;
+            text-align: center;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .game-code {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .game-code-value {
+            font-weight: bold;
+            font-size: 1.8rem;
+            color: #667eea;
+            letter-spacing: 3px;
+            display: block;
+            margin: 10px 0;
+            user-select: all;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .players-list {
+            margin: 20px 0;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .ready-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .ready-badge.ready {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .ready-badge.not-ready {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .game-header {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .round-info {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+
+        .scores {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .image-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 120px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .card:hover:not(:disabled) {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .card.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .card:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .winner-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .winner-card h3 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .status-message {
+            background: #d1ecf1;
+            border: 2px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .game-header { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HOME SCREEN -->
+        <div id="home-screen" class="screen active">
+            <h1>🎭 MEME GAME 🎭</h1>
+            <p class="subtitle">Multiplayer P2P - Gioca senza server!</p>
+
+            <div id="error-container"></div>
+
+            <div class="input-group">
+                <label>Il tuo nome</label>
+                <input type="text" id="player-name" placeholder="Inserisci il tuo nome" maxlength="20">
+            </div>
+
+            <button class="btn btn-primary" onclick="createGame()">
+                🎮 Crea Partita
+            </button>
+
+            <div class="divider">oppure</div>
+
+            <div class="input-group">
+                <label>Codice Partita</label>
+                <input type="text" id="game-code-input" placeholder="Inserisci il codice" maxlength="20">
+            </div>
+
+            <button class="btn btn-secondary" onclick="joinGame()">
+                👥 Unisciti a Partita
+            </button>
+
+            <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 10px; font-size: 0.9rem;">
+                <strong>ℹ️ Come funziona:</strong><br>
+                • Connessione peer-to-peer (nessun server)<br>
+                • Funziona su GitHub Pages<br>
+                • Condividi il codice con gli amici<br>
+                • Minimo 3 giocatori per iniziare
+            </div>
+        </div>
+
+        <!-- LOBBY SCREEN -->
+        <div id="lobby-screen" class="screen">
+            <h2>🎮 Lobby</h2>
+            
+            <div class="game-code">
+                <div>Condividi questo codice con i tuoi amici:</div>
+                <span class="game-code-value" id="room-code"></span>
+                <button class="copy-btn" onclick="copyRoomCode()">📋 Copia Codice</button>
+            </div>
+
+            <div id="status-container"></div>
+
+            <div class="players-list">
+                <h3>Giocatori (<span id="player-count">1</span>/8)</h3>
+                <div id="players-container"></div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="toggleReady()">
+                ✓ Sono Pronto!
+            </button>
+
+            <button id="start-game-btn" class="btn btn-success" onclick="startGame()" style="display: none;">
+                🚀 Avvia Partita
+            </button>
+
+            <button class="btn" onclick="leaveLobby()" style="background: #dc3545; color: white;">
+                ← Torna alla Home
+            </button>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="round-info">
+                    Round <span id="round-num">1</span> | Giudice: <span id="judge-name"></span>
+                </div>
+                <div class="scores" id="scores-container"></div>
+            </div>
+
+            <div class="image-container">
+                <img id="current-meme" src="" alt="Meme">
+            </div>
+
+            <div id="game-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const MEME_IMAGES = [
+            { url: 'https://i.imgflip.com/30b1gx.jpg', alt: 'Drake Hotline Bling' },
+            { url: 'https://i.imgflip.com/1bij.jpg', alt: 'Distracted Boyfriend' },
+            { url: 'https://i.imgflip.com/4t0m5.jpg', alt: 'Bernie Sanders' },
+            { url: 'https://i.imgflip.com/1ur9b0.jpg', alt: 'Surprised Pikachu' },
+            { url: 'https://i.imgflip.com/26am.jpg', alt: 'One Does Not Simply' },
+            { url: 'https://i.imgflip.com/1bhk.jpg', alt: 'Success Kid' },
+            { url: 'https://i.imgflip.com/9ehk.jpg', alt: 'Third World Success' },
+            { url: 'https://i.imgflip.com/1g8my4.jpg', alt: 'Expanding Brain' }
+        ];
+
+        const TEXT_CARDS = [
+            "Quando realizzi che è già lunedì", "La mia vita sociale dopo la quarantena",
+            "Io che cerco di essere produttivo", "Il mio conto in banca",
+            "Aspettative vs Realtà", "Quando qualcuno ti chiede come stai",
+            "Il lunedì mattina", "Io dopo 5 minuti di palestra",
+            "La mia dieta", "Quando provi a fare l'adulto responsabile",
+            "Il weekend che passa troppo veloce", "Io che cucino",
+            "Quando arriva lo stipendio", "Il giorno dopo una festa",
+            "Io cercando di risparmiare", "La motivazione che avevo a gennaio",
+            "Quando ti svegli 5 minuti prima della sveglia", "Io fingendo di capire",
+            "Il mio livello di pazienza", "Quando qualcuno legge i messaggi e non risponde",
+            "La mia energia alle 3 del pomeriggio", "Io che provo a socializzare",
+            "Quando scopri che domani è festa", "Il mio piano per il futuro",
+            "Quando ti dicono 'ci vediamo presto'", "La mia autostima",
+            "Io alle 2 di notte con fame", "Quando finalmente è venerdì",
+            "Il mio senso dell'orientamento", "Io che provo a svegliarmi presto"
+        ];
+
+        // Game state
+        let peer = null;
+        let myPeerId = null;
+        let connections = {};
+        let isHost = false;
+        let playerName = '';
+        let gameState = {
+            players: [],
+            currentRound: 0,
+            judgeIndex: 0,
+            currentImage: null,
+            phase: 'lobby', // lobby, submitting, voting, results
+            submissions: [],
+            myCards: [],
+            selectedCard: null
+        };
+
+        // Initialize PeerJS
+        function initPeer() {
+            peer = new Peer({
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:global.stun.twilio.com:3478' }
+                    ]
+                }
+            });
+
+            peer.on('open', (id) => {
+                myPeerId = id;
+                console.log('My peer ID:', id);
+            });
+
+            peer.on('connection', (conn) => {
+                handleConnection(conn);
+            });
+
+            peer.on('error', (err) => {
+                showError('Errore di connessione: ' + err.message);
+            });
+        }
+
+        // Create game
+        function createGame() {
+            playerName = document.getElementById('player-name').value.trim();
+            if (!playerName) {
+                showError('Inserisci il tuo nome!');
+                return;
+            }
+
+            initPeer();
+            isHost = true;
+
+            peer.on('open', (id) => {
+                myPeerId = id;
+                gameState.players = [{
+                    id: myPeerId,
+                    name: playerName,
+                    score: 0,
+                    ready: false,
+                    isHost: true
+                }];
+
+                showScreen('lobby-screen');
+                document.getElementById('room-code').textContent = myPeerId;
+                updatePlayersUI();
+            });
+        }
+
+        // Join game
+        function joinGame() {
+            playerName = document.getElementById('player-name').value.trim();
+            const roomCode = document.getElementById('game-code-input').value.trim();
+
+            if (!playerName || !roomCode) {
+                showError('Inserisci nome e codice partita!');
+                return;
+            }
+
+            initPeer();
+            isHost = false;
+
+            peer.on('open', (id) => {
+                myPeerId = id;
+                const conn = peer.connect(roomCode);
+                handleConnection(conn);
+
+                conn.on('open', () => {
+                    conn.send({
+                        type: 'join',
+                        player: { id: myPeerId, name: playerName, score: 0, ready: false }
+                    });
+                    showScreen('lobby-screen');
+                    document.getElementById('room-code').textContent = roomCode;
+                });
+            });
+        }
+
+        // Handle P2P connections
+        function handleConnection(conn) {
+            connections[conn.peer] = conn;
+
+            conn.on('data', (data) => {
+                handleMessage(data, conn);
+            });
+
+            conn.on('close', () => {
+                delete connections[conn.peer];
+                gameState.players = gameState.players.filter(p => p.id !== conn.peer);
+                updatePlayersUI();
+            });
+        }
+
+        // Handle messages
+        function handleMessage(data, conn) {
+            switch (data.type) {
+                case 'join':
+                    if (isHost) {
+                        gameState.players.push(data.player);
+                        broadcast({ type: 'players-update', players: gameState.players });
+                        conn.send({ type: 'players-update', players: gameState.players });
+                        updatePlayersUI();
+                    }
+                    break;
+
+                case 'players-update':
+                    gameState.players = data.players;
+                    updatePlayersUI();
+                    break;
+
+                case 'ready-toggle':
+                    const player = gameState.players.find(p => p.id === data.playerId);
+                    if (player) {
+                        player.ready = !player.ready;
+                        if (isHost) {
+                            broadcast({ type: 'players-update', players: gameState.players });
+                        }
+                        updatePlayersUI();
+                    }
+                    break;
+
+                case 'start-game':
+                    startGameplay(data.gameData);
+                    break;
+
+                case 'submit-card':
+                    gameState.submissions.push(data.submission);
+                    if (isHost && gameState.submissions.length === gameState.players.length - 1) {
+                        startVotingPhase();
+                    }
+                    break;
+
+                case 'vote':
+                    if (isHost) {
+                        handleVote(data.cardId);
+                    }
+                    break;
+
+                case 'game-update':
+                    updateGameState(data);
+                    break;
+            }
+        }
+
+        // Broadcast to all connections
+        function broadcast(data) {
+            Object.values(connections).forEach(conn => {
+                if (conn.open) {
+                    conn.send(data);
+                }
+            });
+        }
+
+        // UI Updates
+        function updatePlayersUI() {
+            const container = document.getElementById('players-container');
+            container.innerHTML = '';
+
+            gameState.players.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `
+                    <span>
+                        ${player.name} 
+                        ${player.isHost ? '👑' : ''}
+                        ${player.id === myPeerId ? '(Tu)' : ''}
+                    </span>
+                    <span class="ready-badge ${player.ready ? 'ready' : 'not-ready'}">
+                        ${player.ready ? '✓ Pronto' : 'In attesa'}
+                    </span>
+                `;
+                container.appendChild(div);
+            });
+
+            document.getElementById('player-count').textContent = gameState.players.length;
+
+            // Show start button if host and all ready
+            if (isHost) {
+                const allReady = gameState.players.every(p => p.ready) && gameState.players.length >= 3;
+                document.getElementById('start-game-btn').style.display = allReady ? 'block' : 'none';
+            }
+        }
+
+        function toggleReady() {
+            const me = gameState.players.find(p => p.id === myPeerId);
+            if (me) {
+                me.ready = !me.ready;
+                if (isHost) {
+                    broadcast({ type: 'players-update', players: gameState.players });
+                } else {
+                    broadcast({ type: 'ready-toggle', playerId: myPeerId });
+                }
+                updatePlayersUI();
+            }
+        }
+
+        function startGame() {
+            if (!isHost) return;
+
+            // Initialize game
+            gameState.currentRound = 1;
+            gameState.judgeIndex = 0;
+            gameState.phase = 'submitting';
+            gameState.submissions = [];
+            
+            // Deal cards
+            gameState.players.forEach(player => {
+                player.cards = getRandomCards(7);
+            });
+
+            // Pick random image
+            gameState.currentImage = MEME_IMAGES[Math.floor(Math.random() * MEME_IMAGES.length)];
+
+            const gameData = {
+                players: gameState.players,
+                currentRound: gameState.currentRound,
+                judgeIndex: gameState.judgeIndex,
+                currentImage: gameState.currentImage,
+                phase: gameState.phase
+            };
+
+            broadcast({ type: 'start-game', gameData });
+            startGameplay(gameData);
+        }
+
+        function startGameplay(data) {
+            gameState = { ...gameState, ...data };
+            
+            // Get my cards
+            const me = gameState.players.find(p => p.id === myPeerId);
+            if (me) {
+                gameState.myCards = me.cards;
+            }
+
+            showScreen('game-screen');
+            updateGameUI();
+        }
+
+        function updateGameUI() {
+            document.getElementById('round-num').textContent = gameState.currentRound;
+            document.getElementById('judge-name').textContent = gameState.players[gameState.judgeIndex].name;
+            
+            if (gameState.currentImage) {
+                document.getElementById('current-meme').src = gameState.currentImage.url;
+            }
+
+            // Update scores
+            const scoresContainer = document.getElementById('scores-container');
+            scoresContainer.innerHTML = gameState.players.map(p => 
+                `<span class="score-item">${p.name}: ${p.score}</span>`
+            ).join('');
+
+            // Render phase
+            const contentDiv = document.getElementById('game-content');
+            const isJudge = gameState.players[gameState.judgeIndex].id === myPeerId;
+
+            if (gameState.phase === 'submitting') {
+                if (isJudge) {
+                    contentDiv.innerHTML = '<div class="status-message"><h3>👨‍⚖️ Sei il giudice!</h3><p>Aspetta che gli altri giocatori inviino le carte...</p></div>';
+                } else {
+                    renderCardSelection();
+                }
+            } else if (gameState.phase === 'voting') {
+                if (isJudge) {
+                    renderVoting();
+                } else {
+                    contentDiv.innerHTML = '<div class="status-message"><h3>⏳ Votazione in corso</h3><p>Il giudice sta scegliendo la carta migliore...</p></div>';
+                }
+            } else if (gameState.phase === 'results') {
+                renderResults();
+            }
+        }
+
+        function renderCardSelection() {
+            const hasSubmitted = gameState.selectedCard !== null;
+            const html = `
+                <h3 style="text-align: center; margin: 20px 0;">
+                    ${hasSubmitted ? '✓ Carta inviata! Aspetta gli altri...' : 'Scegli la tua carta:'}
+                </h3>
+                <div class="cards-grid">
+                    ${gameState.myCards.map((card, i) => `
+                        <button class="card ${gameState.selectedCard === i ? 'selected' : ''}" 
+                                onclick="selectCard(${i})"
+                                ${hasSubmitted ? 'disabled' : ''}>
+                            ${card}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('game-content').innerHTML = html;
+        }
+
+        function selectCard(index) {
+            gameState.selectedCard = index;
+            const card = gameState.myCards[index];
+            
+            broadcast({
+                type: 'submit-card',
+                submission: {
+                    playerId: myPeerId,
+                    playerName: playerName,
+                    card: card,
+                    cardIndex: index
+                }
+            });
+
+            gameState.myCards.splice(index, 1);
+            renderCardSelection();
+        }
+
+        function startVotingPhase() {
+            gameState.phase = 'voting';
+            gameState.submissions.sort(() => Math.random() - 0.5);
+            
+            broadcast({
+                type: 'game-update',
+                phase: 'voting',
+                submissions: gameState.submissions
+            });
+
+            updateGameUI();
+        }
+
+        function renderVoting() {
+            const html = `
+                <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ Scegli il meme migliore:</h3>
+                <div class="cards-grid">
+                    ${gameState.submissions.map((sub, i) => `
+                        <button class="card" onclick="voteCard(${i})">
+                            ${sub.card}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('game-content').innerHTML = html;
+        }
+
+        function voteCard(index) {
+            if (isHost) {
+                handleVote(index);
+            } else {
+                broadcast({ type: 'vote', cardId: index });
+            }
+        }
+
+        function handleVote(cardIndex) {
+            const winner = gameState.submissions[cardIndex];
+            const winnerPlayer = gameState.players.find(p => p.id === winner.playerId);
+            if (winnerPlayer) {
+                winnerPlayer.score++;
+            }
+
+            gameState.phase = 'results';
+            gameState.lastWinner = winner;
+
+            broadcast({
+                type: 'game-update',
+                phase: 'results',
+                lastWinner: winner,
+                players: gameState.players
+            });
+
+            setTimeout(() => {
+                if (winnerPlayer && winnerPlayer.score >= 5) {
+                    alert(`🎉 ${winnerPlayer.name} ha vinto!`);
+                    location.reload();
+                } else {
+                    nextRound();
+                }
+            }, 5000);
+
+            updateGameUI();
+        }
+
+        function renderResults() {
+            const html = `
+                <div class="winner-card">
+                    <h3>🏆 Vincitore del round:</h3>
+                    <p style="font-size: 1.3rem; margin: 15px 0;">"${gameState.lastWinner.card}"</p>
+                    <p>di <strong>${gameState.lastWinner.playerName}</strong></p>
+                </div>
+                <div style="text-align: center; color: #666; font-style: italic;">
+                    Prossimo round tra qualche secondo...
+                </div>
+            `;
+            document.getElementById('game-content').innerHTML = html;
+        }
+
+        function nextRound() {
+            if (!isHost) return;
+
+            gameState.currentRound++;
+            gameState.judgeIndex = (gameState.judgeIndex + 1) % gameState.players.length;
+            gameState.phase = 'submitting';
+            gameState.submissions = [];
+            gameState.selectedCard = null;
+            gameState.currentImage = MEME_IMAGES[Math.floor(Math.random() * MEME_IMAGES.length)];
+
+            // Deal new cards
+            gameState.players.forEach(player => {
+                if (player.cards.length < 7) {
+                    const needed = 7 - player.cards.length;
+                    for (let i = 0; i < needed; i++) {
+                        player.cards.push(TEXT_CARDS[Math.floor(Math.random() * TEXT_CARDS.length)]);
+                    }
+                }
+            });
+
+            broadcast({
+                type: 'game-update',
+                ...gameState
+            });
+
+            updateGameUI();
+        }
+
+        function updateGameState(data) {
+            Object.assign(gameState, data);
+            
+            const me = gameState.players.find(p => p.id === myPeerId);
+            if (me) {
+                gameState.myCards = me.cards;
+            }
+            
+            updateGameUI();
+        }
+
+        // Utility functions
+        function getRandomCards(count) {
+            const shuffled = [...TEXT_CARDS].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showError(msg) {
+            const container = document.getElementById('error-container');
+            container.innerHTML = `<div class="error-message">${msg}</div>`;
+            setTimeout(() => container.innerHTML = '', 3000);
+        }
+
+        function copyRoomCode() {
+            const code = document.getElementById('room-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Codice copiato! 📋');
+            });
+        }
+
+        function leaveLobby() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
