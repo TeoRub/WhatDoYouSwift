@@ -7,6 +7,9 @@
 - 🎮 **Multiplayer real-time** - gioca con 3-8 amici
 - 🔒 **Privacy** - nessun dato salvato sui server
 - 🚀 **Zero configurazione** - basta aprire il link!
+- 🎴 **Carte realistiche** - design con bordi arrotondati ed effetti 3D
+- 🎲 **Giudice casuale** - ogni round un giocatore diverso sceglie l'immagine
+- 👨‍⚖️ **Controllo giudice** - solo il giudice vota il vincitore
 
 ## 🚀 Deploy su GitHub Pages
 
@@ -16,7 +19,7 @@
 2. Vai su **Settings** → **Pages**
 3. Seleziona **Source**: `main` branch, folder `/`
 4. Clicca **Save**
-5. Il tuo gioco sarà disponibile su: `https://tuo-username.github.io/meme-game-p2p/`
+5. Il tuo gioco sarà disponibile su: `https://teorub.github.io/WhatDoYouSwift/`
 
 ### Opzione 2: Deploy Manuale
 
@@ -48,12 +51,12 @@
 2. Tutti cliccano **"Sono Pronto"**
 3. L'host clicca **"Avvia Partita"**
 4. Ogni turno:
-   - Un giocatore è il **Giudice** (rotazione automatica)
-   - Appare un'**immagine meme**
-   - Gli altri giocatori scelgono una **carta testo**
-   - Il giudice sceglie la **carta più divertente**
+   - Un giocatore viene scelto **casualmente come Giudice** 🎲
+   - Il **Giudice sceglie un'immagine meme** dalla galleria
+   - Gli altri giocatori scelgono una **carta testo** dalla loro mano
+   - Il giudice vede tutte le carte (anonime) e sceglie la **più divertente**
    - Chi vince guadagna **1 punto**
-5. **Primo a 5 punti vince!**
+5. **Primo a 5 punti vince!** 🏆
 
 ## 🔧 Tecnologie Usate
 
@@ -127,7 +130,7 @@ Pull requests sono benvenute! Per modifiche importanti, apri prima un issue.
 
 Una volta deployato, condividi il link con i tuoi amici e divertiti! 🚀
 
-**Link Demo**: [https://teorub.github.io/WhatDoYouSwift/WhatDoYouSwift](https://teorub.github.io/WhatDoYouSwift/WhatDoYouSwift/)
+**Link Demo**: [https://teorub.github.io/WhatDoYouSwift/](https://teorub.github.io/WhatDoYouSwift/)
 
 ---
 
