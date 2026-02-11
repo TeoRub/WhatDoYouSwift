@@ -1,6 +1,4 @@
-# 🎮 Meme Game - P2P Multiplayer
-
-Gioco multiplayer peer-to-peer (P2P) ispirato a "What Do You Meme?" - funziona completamente **senza server**!
+# 🎮 WhatDoYouSwift?
 
 ## ✨ Caratteristiche
 
@@ -129,7 +127,7 @@ Pull requests sono benvenute! Per modifiche importanti, apri prima un issue.
 
 Una volta deployato, condividi il link con i tuoi amici e divertiti! 🚀
 
-**Link Demo**: [https://tuo-username.github.io/meme-game-p2p/](https://tuo-username.github.io/meme-game-p2p/)
+**Link Demo**: [https://teorub.github.io/WhatDoYouSwift/WhatDoYouSwift](https://teorub.github.io/WhatDoYouSwift/WhatDoYouSwift/)
 
 ---
 
