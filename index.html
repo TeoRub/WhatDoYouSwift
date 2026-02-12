@@ -246,10 +246,68 @@
             margin: 20px 0;
         }
 
+        /* Mobile swipe container */
+        @media (max-width: 768px) {
+            .cards-grid {
+                display: block;
+                position: relative;
+                overflow: hidden;
+                height: 250px;
+                margin: 20px 0;
+            }
+
+            .cards-swipe-container {
+                display: flex;
+                transition: transform 0.3s ease-out;
+                height: 100%;
+                touch-action: pan-y;
+            }
+
+            .card {
+                min-width: 85%;
+                margin: 0 7.5%;
+                flex-shrink: 0;
+            }
+
+            .swipe-indicators {
+                display: flex;
+                justify-content: center;
+                gap: 8px;
+                margin-top: 15px;
+            }
+
+            .swipe-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: rgba(193, 125, 154, 0.3);
+                transition: all 0.3s;
+            }
+
+            .swipe-dot.active {
+                background: #c17d9a;
+                transform: scale(1.3);
+            }
+
+            .swipe-hint {
+                text-align: center;
+                color: #ba99c5;
+                font-size: 0.9rem;
+                margin-top: 10px;
+                font-style: italic;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .swipe-indicators,
+            .swipe-hint {
+                display: none !important;
+            }
+        }
+
         .card {
             background: #c17d9a;
             color: white;
-            border: 4px solid #c17d9a;
             border-radius: 20px;
             padding: 30px 20px;
             min-height: 180px;
@@ -262,7 +320,6 @@
             font-weight: 600;
             font-size: 1.1rem;
             line-height: 1.4;
-            box-shadow: 0 4px 8px rgba(193, 125, 154, 0.3);
             position: relative;
         }
 
@@ -478,85 +535,84 @@
         ];
 
         const TEXT_CARDS = [
-            "Quando il tuo profilo social é attivo ma tu sei spento dentro", "Quando ti chiedono come stai e tu rispondi con un meme",
-            "Quando ongi \"tutto benen\" é un grido silenzioso d'aiuto", "Quando parli con il tuo io del passato e vi mettete a ridere insieme",
+            "Quando il tuo profilo social è attivo ma tu sei spento dentro", "Quando ti chiedono come stai e tu rispondi con un meme",
+            "Quando ongi \"tutto bene\" è un grido silenzioso d'aiuto", "Quando parli con il tuo io del passato e vi mettete a ridere insieme",
             "Quando finisci i meme salvati e devi affrontare la realtà", "Quando qualcuno ti dice \"non devi preoccuparti\" e peggiora tutto",
-            "Quando non sei triste ma neanche proprio allegro", "Quando ti dicono \"dai sorridi\" e tu stai gai dando il massimo",
-            "Quando ti fai una domanda seria e finisci su Tik Tok per distrarti", "Quando una frase ti colpisce nel cuoer e tu pensi \"wow, ferito gratis anche oggi\" ",
+            "Quando non sei triste ma neanche proprio allegro", "Quando ti dicono \"dai sorridi\" e tu stai già dando il massimo",
+            "Quando ti fai una domanda seria e finisci su Tik Tok per distrarti", "Quando una frase ti colpisce nel cuore e tu pensi \"wow, ferito gratis anche oggi\" ",
             "Quando la batteria del tuo telefono muore e con lei anche la tua volontà di vivere", "Quando l'unica cosa che va veloce nella tua vita è la connessione a internet",
-            "Quando cerchi di essere maturio ma poi parte il panico", "Quando hai mille pensieri ma nessuna voglia di affrontarne anhe solo uno",
-            "Quando ti guardi allo specchio e pensi: \"e con te dovrei conquistare il mondo?\"", "Quando ogni messaggio vocael è una seduta di terapia gratuita",
-            "Quando ti dicono \"non pwnsarci\" e tupensi a quello per le prossime 4 ore", "Quando la tua risposta automatica è:\"è un periodo \"",
+            "Quando cerchi di essere maturo ma poi parte il panico", "Quando hai mille pensieri ma nessuna voglia di affrontarne anche solo uno",
+            "Quando ti guardi allo specchio e pensi: \"e con te dovrei conquistare il mondo?\"", "Quando ogni messaggio vocale è una seduta di terapia gratuita",
+            "Quando ti dicono \"non pensarci\" e tu pensi a quello per le prossime 4 ore", "Quando la tua risposta automatica è:\"è un periodo \"",
             "Quando tutti crescono e tu cerchi ancora la voglia di alzarti dal letto", "Quando hai bisogno di una vacanza da te stesso",
             "Quando ogni lunedì ti sembra una punizione divina", "Quando entri in loop su qualcosa che non centra nulla",
             "Quando devi prendere una decisione e chiedi consiglio... a un meme", "Quando tutto va storto ma tu hai ancora speranze(è questo il vero problema)",
             "Quando ti senti osservato ma in realtà nessuno se ne accorge mai", "Quando l'unica costanza nella vita è l'autosabotaggio",
             "Quando vuoi fare qualcosa di produttivo ma ti scappa la voglia", "Quando apri il portafoglio e lui ti guarda come per dire \"io ho fatto il possibile\"",
-            "Quando hai dormito 10 ore ma ti sveglicomunque stanco dalla vita", "Quando dici \"oggi rispondo a tutti i messaggi\" e sparisci dinuovo",
+            "Quando hai dormito 10 ore ma ti svegli comunque stanco dalla vita", "Quando dici \"oggi rispondo a tutti i messaggi\" e sparisci di nuovo",
             "Quando prometti a te di essere più zen ma la gente continua a respirare","Quando l'unica cosa stabile nella tua vita è la connessione Wi-Fi",
             "Quando decidi di essere produttivo e ti serve una pausa dopo aver fatto la lista","Quando ogni giorno sembra un sequel non richiesto del precedente",
-            "Io che reagisco auna red flag come farebbe una fan di Taylor Swift: piangendo e romanticizzando tutto","Quando capisci che questa realzione finirà mala ma sei una fan di Taylor Swift, quindi resti per il materiale emotivo",
-            "Io che dico 'non mi tocca' mentre penso a quale canzone di Taylor Swift descrive esattamente questo trauma","Essere una fan di Taylor Swift significa chiamare 'crescita personale' il sofffrire con una colonna sonora",
+            "Io che reagisco a una red flag come farebbe una fan di Taylor Swift: piangendo e romanticizzando tutto","Quando capisci che questa relazione finirà mala ma sei una fan di Taylor Swift, quindi resti per il materiale emotivo",
+            "Io che dico 'non mi tocca' mentre penso a quale canzone di Taylor Swift descrive esattamente questo trauma","Essere una fan di Taylor Swift significa chiamare 'crescita personale' il soffrire con una colonna sonora",
             "Io che entro in una relazione sapendo già quale album di Taylor Swift mi distruggerà dopo","Quando vai a dormire presto e ti svegli stanco lo stesso",
             "Quando entri in classe e il prof ha quell' energia che tu hai perso nel 2016","Quando ti viene fame subito dopo aver mangiato",
-            "Quando sorridi solo prerchè non puoi permetterti un esaurimento nervoso in quesl moemnto","Quando ricevi un messaggio e pansi \"oddio, ora devo rispondere...\" ",
+            "Quando sorridi solo prerchè non puoi permetterti un esaurimento nervoso in quel momento","Quando ricevi un messaggio e pensi \"oddio, ora devo rispondere...\" ",
             "Quando i tuoi amici hanno tutti un vita e tu sei qui a leggere i meme","Quando \"vediamoci presto\" resta solo un  miraggio per mesi",
             "Quando la tua motivazione dipende dal meteo e dal segno zodiacale","Quando sei uscito per distrarti e hai trovato solo altri motivi per pensare troppo",
-            "Quando ti viene chiesto \"sei felice?\" e ti fermi a fare un bilanoio di guerra","Qunando l'unico goal raggiunto della gioranata è non urlare in pubblico",
-            "Quando vai a dormire presto e comunque sogni di essere in ritardo","QUndo vedi gente della tua età realizzata e tu sei ancora al tutorial",
-            "Quando l'autosabotaggio è ormai una competenza nel curriculum","Quando l'unico piano per il weekend è spopravvivere emotivamente",
+            "Quando ti viene chiesto \"sei felice?\" e ti fermi a fare un bilancio di guerra","Quando l'unico goal raggiunto della giornata è non urlare in pubblico",
+            "Quando vai a dormire presto e comunque sogni di essere in ritardo","Quando vedi gente della tua età realizzata e tu sei ancora al tutorial",
+            "Quando l'autosabotaggio è ormai una competenza nel curriculum","Quando l'unico piano per il weekend è sopravvivere emotivamente",
             "Quando il tuo sarcasmo è l'unica difesa contro la realtà","quando ti dicono \"sei troppo sensibile\" e tu piangi con dignità",
-            "Quando inizi una serie e finisci la stagione prima di finire un compito","Quando sei l'amico \"divertente\" ma dentro hai un monologo dramatico",
-            "Quando il piano era \"iniziare bene la giornata\" e dopo 10 minuti stai gia urlando","Quando ti lamenti di nona vere tempo ma hai rivisto 7 volte la stessa serie",
-            "Quando vuoi stare da solo ma anche sentirti cercato, ma anche ignorato, ma anceh amato","Quando fai finta di essere d'accordo solo per evitare discussioni",
+            "Quando inizi una serie e finisci la stagione prima di finire un compito","Quando sei l'amico \"divertente\" ma dentro hai un monologo drammatico",
+            "Quando il piano era \"iniziare bene la giornata\" e dopo 10 minuti stai gia urlando","Quando ti lamenti di non avere tempo ma hai rivisto 7 volte la stessa serie",
+            "Quando vuoi stare da solo ma anche sentirti cercato, ma anche ignorato, ma anche amato","Quando fai finta di essere d'accordo solo per evitare discussioni",
             "Quando vorresti solo dormire ma l'ansia ha prenotato la suite","Quando ogni messaggio è un test di interpretazione",
-            "Quando fai una figuraccia e pensi \"ci passerò ogni notte per i prossimi 1 anni\"","Quando realizzi che non sai nemmenno cosa ti piace davvero",
+            "Quando fai una figuraccia e pensi \"ci passerò ogni notte per i prossimi 1 anni\"","Quando realizzi che non sai nemmeno cosa ti piace davvero",
             "Quando ridi per non piangere ma un po' piangi comunque","quando il tuo modo di affrontare i problemi è ignorarli fino a quando non diventano mostri",
-            "Quando il Wi-Fi va lento e tu riconosideri la tua intera esistenza","Quando ti guardi allo specchio e parte la crisi d'identità",
+            "Quando il Wi-Fi va lento e tu riconsideri la tua intera esistenza","Quando ti guardi allo specchio e parte la crisi d'identità",
             "Quando rispondi \"non lo so\" ma dentro di ahi un saggio di 32 pagine","Quando dici \"ora studio ma ti ritrovi a cambiare la suoneria\"",
-            "Quando piangi e ti scatti selfi per vedere quanto sei melodrammatico","Quando ti raccontano un segreto e tu ti senti il contenitor esacro della verità",
+            "Quando piangi e ti scatti selfie per vedere quanto sei melodrammatico","Quando ti raccontano un segreto e tu ti senti il contenitore sacro della verità",
             "Quando fingi di essere chill ma hai già scritto 2 lettere di addio","Quando dici \" mi faccio i fatti miei\" ma poi diventi Sherlock Holmes",
             "Quando il tuo amico è in ritardo ma tu lo hai cancellato dalla tua vita","Quando dici\"basta social per oggi\" e dopo 2 minuti sei su Tik Tok",
-            "Quando ti regalano qualcosa di brutto e devi sorridere forte","Quando dici \"oggi sarò produttivo\" e ti ritrovi a guardaer video di gente che pulisce tappeti",
-            "Quando apri il libro per studiare e ti scappa la viglia di vivere","Quando il tuo cane ha una vita suciale pui attiva della tua",
+            "Quando ti regalano qualcosa di brutto e devi sorridere forte","Quando dici \"oggi sarò produttivo\" e ti ritrovi a guardare video di gente che pulisce tappeti",
+            "Quando apri il libro per studiare e ti scappa la voglia di vivere","Quando il tuo cane ha una vita sociale più attiva della tua",
             "Quando pensi \"è solo un esame\" ma il tuo futuro comincia a tremare","Quando metti la sveglia alle 7 ma la spegni fino alle 11",
-            "Quando ti svegli e ti ricordi che oggi devi essere adulto","Quando vai al supermencato con la lista ma torni solo con snack",
-            "Quando provia a mangiare sano ama poi tua nonna cuciina","Quando sei in mezzo a una crisi esistenziale ma sorridi per non insospettire nessuno",
-            "Quando ti ricordii qualcosa di imbarazzante che hai fatto 8 anni fa ","Quando hai così tanto da fare che decidi di non fare niente",
-            "Quando \"prendo una pausa di 5 minuti\" e il sole è già tramontato","Quando il prof inizia a spigare e tu sei già al terzo rewatch mentale della tua serie preferita",
+            "Quando ti svegli e ti ricordi che oggi devi essere adulto","Quando vai al supermercato con la lista ma torni solo con snack",
+            "Quando provi a mangiare sano ma poi tua nonna cucina","Quando sei in mezzo a una crisi esistenziale ma sorridi per non insospettire nessuno",
+            "Quando ti ricordi qualcosa di imbarazzante che hai fatto 8 anni fa ","Quando hai così tanto da fare che decidi di non fare niente",
+            "Quando \"prendo una pausa di 5 minuti\" e il sole è già tramontato","Quando il prof inizia a spiegare e tu sei già al terzo rewatch mentale della tua serie preferita",
             "Quando cerchi di essere forte ma la Wi-FI non funziona","Quando ti dicono \"stai tranquillo\" e ora sei ufficialmente nel panico",
             "Quando qualcuno ti chiama e tu pensi: potevi scrivermi","Quando potevi dormire e il tuo cervello inizia il podcast delle paranoie",
-            "Quando sei l'unico del grupppo ch enon ha capito il piano","Quando dici \"basta shopping online\" e Amazon ti scrive per sapere se stai bene",
+            "Quando sei l'unico del gruppo che non ha capito il piano","Quando dici \"basta shopping online\" e Amazon ti scrive per sapere se stai bene",
             "Quando sei così stanco che ti addormenti mentre stai procrastinando","Quando vedi un meme troppo vero e ti senti violato ",
             "Quando provi a fare il figo e la vita ti umilia subito","Quando parli in sogno e riveli cose che nemmeno sapevi",
             "Quando il karma funziona ma non nel tuo favore","Quando ti dicono\"è solo un gioco\" ma tu hai già pianificato la vendetta",
-            "Quando dici \"non mi intressa\" e ppoi ti fei 3 profili fake","",
             "Quando ti alzi dal letto e gia vuoi tornarci","Quando il tuo amico è felice e tu cerchi di esserlo per lui, anche se sei a pezzi",
-            "Quando fai una brutta figura e pensi di trasferirti all'estero","Quando il tuo gatto ti giudica e tu inizi adubitare di te stesso",
-            "Quando ti svegli all'improvviso e non sai più in che anno sei","Quando cerchi di motivsrti ma ti disttrai con un granello di polvere",
-            "Quando dici non importe a ma invece importa eccome","Quando vuoi solo un consiglio e ti dicono \"te lo avevo detto\"",
-            "Quando ti innamori del barista e vai aprendere 14 caffè al giorno","Quando vuoi solo dormire ma la tua coscienza vuole solo parlare",
-            "Quando dici\"vado a studiare\" ma finisci a riordinare i cavi del caricatore","Quando ti metti le cuffie ma niente parte, colo silenzio e tristezza",
+            "Quando fai una brutta figura e pensi di trasferirti all'estero","Quando il tuo gatto ti giudica e tu inizi a dubitare di te stesso",
+            "Quando ti svegli all'improvviso e non sai più in che anno sei","Quando cerchi di motivarti ma ti distrai con un granello di polvere",
+            "Quando dici non importa ma invece importa eccome","Quando vuoi solo un consiglio e ti dicono \"te lo avevo detto\"",
+            "Quando ti innamori del barista e vai a prendere 14 caffè al giorno","Quando vuoi solo dormire ma la tua coscienza vuole solo parlare",
+            "Quando dici\"vado a studiare\" ma finisci a riordinare i cavi del caricatore","Quando ti metti le cuffie ma niente parte, solo silenzio e tristezza",
             "Quando fai finta di capire il film ma se confuso dal minuto uno","Quando usi parole difficili solo per sembrare interessante",
-            "Quando ti dimenti il nome di qualcuno e speri che non se nw accorga","Qualcuno ti dice \"sii te stesso\" e tu pensi \"forse no\"",
-            "Qunado cerchi l'amore amtrovi solo notifiche spam","Quando dici \"sto bene da solo\" ma intanto coccolo un peluche",
-            "Qunado prendi una decisione e la rimpiangi in 0.3 secondi","Quando fai una battuta e nessuno ride",
+            "Quando ti dimentichi il nome di qualcuno e speri che non se ne accorga","Qualcuno ti dice \"sii te stesso\" e tu pensi \"forse no\"",
+            "Quando cerchi l'amore ma trovi solo notifiche spam","Quando dici \"sto bene da solo\" ma intanto coccolo un peluche",
+            "Quando prendi una decisione e la rimpiangi in 0.3 secondi","Quando fai una battuta e nessuno ride",
             "Quando sei sarcastico e ti prendono sul serio","Quando vuoi essere produttivo ma ti blocca la vita",
             "Quando ti dicono\"vedrai andrà meglio\" e peggiora","Quando dicono che suamo pigre ma sappiamo fare il binge-watching come un lavoro a tempo pieno",
             "La tua reazione quando qualcuno ti chiede :'che fai dopo il diploma?'","Quando entri in classe e ti ricordi che c'era il compito oggi",
-            "Quando dici che odi il caffè ma sei alla terza tazza","Io che entro in un negozio giusto per 'guaradre' e ne esco con 5 borse",
-            "La tua faccia quando apri il gruppo WWhatsApp e vedi 147 notifiche nel gruppo","Quando copi tutto il compito e alla fine lui prende 6 e tu 3",
+            "Quando dici che odi il caffè ma sei alla terza tazza","Io che entro in un negozio giusto per 'guardare' e ne esco con 5 borse",
+            "La tua faccia quando apri il gruppo WhatsApp e vedi 147 notifiche nel gruppo","Quando copi tutto il compito e alla fine lui prende 6 e tu 3",
             "Io che apro il libro per studiare e il cervello va subito un stand-by","Quando il prof ti chiede di leggere ad alta voce e i cervello dimentica come si legge",
             "La tua faccia quando il prof dice: 'Questo argomento è facilissimo' e poi parla in aramaico antico","Io e le mie amiche che ci guardiamo in silenzio perchè sappiamo già cosa sta pensando l'altra",
             "Quando organizziamo tutto per uscire e poi restiamo a casa ina pigiama","La tua amica dice :'Non compro niente, oggi risparmio' e 10 minuti dopo ha svuotato il negozio",
-            "Quando siamo tutte d'accordo che lui è un cretino ma comunque stolkeriamo il suo profilo insieme","io e le mie amiche che fingiamo di essere mature davanti aglia ltri ma siamo un meme vivente tra di noi",
+            "Quando siamo tutte d'accordo che lui è un cretino ma comunque stolkeriamo il suo profilo insieme","io e le mie amiche che fingiamo di essere mature davanti agli altri ma siamo un meme vivente tra di noi",
             "Quando lui manda un cuore e tu : Questo è amore vero","io che cerco di smettere di sembare tranquilla quando in realtà sto monitorando ogni sua mossa",
             "Quando lui ti dice 'Buongiorno' e tu hai gia immaginata il matrimonio","la tua faccia quando vede il suo nome comparire nelle notifiche",
             "Quando lui ti risponde dopo ore e tu fai finta di non aver aspettato tutto il giorno","Quando dici che non sei sopra la situazione ma hai già scritto un messaggio di 3000 parole",
-            "Io che provo a stare fuori dal dramma ma finisco a raccontarlo in ogni dettaglio alle amiche","Quando scopri che anno fatto un'uscita senza di te e sorridi ma dentro muori",
-            "Io che dico: 'Non mi interessa più' e 5 minuti dopo sto gia analizzando la situazione con le amiche","Quando il concerto non è ancora finito, ma tu hai già il cuore spezzato perchè non sai quando sarà la prossima volta",
-            "Quando Taylor canta Shake It Off e tu realizzi che sei l'unica persona nel tuo gruppo che non sa ballare","Qunado pendi di essere pronto per il concerto, ma poi Taylor inizia a cantare Fearless e ti trasformi in una persona che non smette più di piangere",
-            "Io e la mia amica che ci capiamo con uno sguardo durante un disastro sociale","Quando lei diche che odia qualcunoe io sono già pronta con la lista dei motivi per odiarlo anch'io",
+            "Io che provo a stare fuori dal dramma ma finisco a raccontarlo in ogni dettaglio alle amiche","Quando scopri che hanno fatto un'uscita senza di te e sorridi ma dentro muori",
+            "Io che dico: 'Non mi interessa più' e 5 minuti dopo sto già analizzando la situazione con le amiche","Quando il concerto non è ancora finito, ma tu hai già il cuore spezzato perchè non sai quando sarà la prossima volta",
+            "Quando Taylor canta Shake It Off e tu realizzi che sei l'unica persona nel tuo gruppo che non sa ballare","Quando pensi di essere pronto per il concerto, ma poi Taylor inizia a cantare Fearless e ti trasformi in una persona che non smette più di piangere",
+            "Io e la mia amica che ci capiamo con uno sguardo durante un disastro sociale","Quando lei dice che odia qualcuno e io sono già pronta con la lista dei motivi per odiarlo anch'io",
             "Io e le mie amiche dopo ave deciso di non prendere il dolce... e prendiamo 3 torte","La tua faccia quando lui ti chiama per nome e non con il soprannome che gli hai inventato nella tua testa",
             "Quando ti mandano un messaggio dopo 3 ore e risponde solo con 'ok'","La tua amica che ti urla: 'Bloccalo subito!' e tu: Ma aspetta,forse mi ama!",
             "Quando il dramma si calma e ti accorgi che la sua vita è diventata noiosa","Quando dici 'Esco per 5 minuti' e torni 3 ore dopo con borse piene",
@@ -565,71 +621,70 @@
             "Quando senti una canzone triste e la metti in loop per soffrire meglio","Quando parli con te stesso e perdi comunque la discussione",
             "Quando l'oroscopo ti dice di avere pazienza ma sei già esploso","Qundo il tuo amico dice \"fidati di me\" e tu prepari gia il disastro",
             "Quando cerchi di sembraer maturo ma ti emozioni per le caramelle","Quando sei l'unico single al tavolo e sorridi per non piangere",
-            /*"","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",
-            "","",*/
+            "Quando metti la modalità aereo per sbaglio e pensi che nessuno ti voglia più","Quando il tuo amico trova l'amore e tu trovi solo snack nel frigo",
+            "Quando ti dicono \"sei troppo sensibile\" e ti metti a piangere per questo","Quando entri in camera e dimentichi perché sei entrato",
+            "Quando ti offrono da mangiare e dici \"no grazie\" ma speravi insistessero","Quando ti chiedono \"che fai nella vita?\" е tu vuoi solo rispondere \"sopravvivo\"",
+            "Quando dici \"ci penso domani\" e domani ti travolge","Quando vuoi risparmiare e poi compri tutto quello che non serve",
+            "Quando ti penti all'istante dopo aver mandato un vocale di 3 minuti","Quando la tua canzone preferita parte in shuffle: \"è destino\"",
+            "Quando dai il tuo consiglio più saggio e ti rispondono con \"ah ok\"","lo ogni volta che dico \"inizio la dieta lunedì\"",
+            "Quando sei in ansia per cose che non sono ancora successe","Quando dici \"non mi interessa più\" e poi stalkeri il suo cane",
+            "Quando fai il figo e poi inciampi davanti a tutti","Quando dici \"sono solo stanca\" ma in realtà stai attraversando una crisi esistenziale",
+            "Quando ridi per non piangere ma poi piangi comunque","Quando il tuo ex guarda la tua storia e tu pensi \"visto che ti sei perso?\"",
+            "Quando hai finito la serie e non sai più come vivere","lo ogni volta che provo a essere adulto e fallisco miseramente",
+            "Quando dici \"ho solo bisogno di un po' di tempo\" e ti isolano per sempre","Quando il tuo amico ha un nuovo crush e tu ti trasformi in FBI",
+            "lo che cerco di sembrare spontaneo ma tutto è stato pianificato da 3 giorni","lo che ascolto musica triste solo per complicarmi la giornata",
+            "Quando scrivi \"sto bene\" ma intendi \"sto crollando dentro\"","lo che sorrido quando lui parla... mentre nella mia testa sto già progettando la fuga",
+            "Quando dici \"stasera vado a dormire presto\" e sono le 4:17","Quando ti svegli motivato ma poi la giornata ti ricorda chi sei davvero",
+            "Quando ti dicono \"non è personale\" e invece lo prendi come un affronto alla stirpe","lo che do consigli amorosi mentre la mia situazione sentimentale è Titanic",
+            "Quando qualcuno dice \"parliamo seriamente\" e tu inizi a sudare","lo che invio un messaggio passivo-aggressivo e poi metto il telefono in modalità aereo",
+            "lo che faccio finta di non aver sentito \"chi vuole leggere ad alta voce?\"","Quando metti l'allarme alle 7 e ti svegli alle 12 in un'altra dimensione",
+            "La mia faccia quando l'app mi dice \"hai passato 6 ore su Tik Tok oggi\"","Quando dici \"sono tranquilla\" ma hai già preparato un powerpoint di accuse",
+            "Quando il prof dice \"scegli tu l'argomento\" e tu scegli il panico","Quando il mega tuor della tua cantante preferita finisce",
+            "lo ogni volta che cerco di sembrare interessato durante una riunione su Zoom","La tua faccia quando il cameriere porta il piatto sbagliato, ma sei troppo timida per dirlo",
+            "lo che dico: 'Domani mi alzo presto' e poi snoozzo la sveglia 15 volte","lo che cerco di risparmiare ma mi convinco che 'questo è un investimento' ogni volta",
+            "Quando scatti una foto con le amiche e devi rifarla 20 volte perché 'non sto bene qui'","Quando finalmente vai a dormire presto e ti svegli comunque distrutta",
+            "Quando tua madre entra in camera e ti dice: 'Che fai? Niente come sempre?'","lo che provo a fare una to-do list ma finisco per procrastinare ogni punto",
+            "Quando finalmente esci di casa e ti rendi conto che vuoi solo tornare","Quando apri il frigo per la settima volta sperando che sia apparso qualcosa di nuovo",
+            "Quella compagna che alza la mano per ricordare al prof i compiti","Quando il prof dice: 'Interrogazione a sorpresa' e tu non ricordi neanche in che anno siamo",
+            "La tua faccia quando scopri che oggi c'è educazione fisica","Quando ti fai interrogare per uscire prima ma finisce che ti becchi un 4",
+            "Quando il prof ti chiama mentre stai leggendo la chat del gruppo","Quando il tuo amico ti dice che ha visto Taylor Swift in concerto cinque volte, e tu rispondi con 'Sei una leggenda, io sono ancora qui a recuperare il mio biglietto'",
+            "Quando il tuo cantante preferito annuncia la sua entrata sul palco e il tuo cuore salta un battito","Quando il concerto sta per iniziare e pensi: 'Non posso credere che sto per vedere Taylor Swift dal vivo!'",
+            "lo che mi trucco per uscire e torno a casa senza aver fatto nemmeno una foto decente","La faccia di tua madre quando entra in camera tua e tu non hai ancora rifatto il letto",
+            "La tua reazione quando qualcuno ti dice: 'Ma hai sempre fame?'","Quando il gruppo si divide e tu vuoi solo essere neutrale ma finisci al centro del fuoco incrociato",
+            "Quando dici 'Oggi faccio mille cose' e invece ti ritrovi a scrollare Tik Tok tutto il giorno","lo che cerco di ignorare il drama... ma sono già in prima fila con i popcorn",
+            "Quando dici che non vuoi litigare ma parte un monologo da 40 minuti","lo che cerco la mia voglia di vivere",
+            "Quando dici che sei 'super chill' e 2 minuti dopo stai urlando in caps lock.","La tua faccia quando scopri che hanno parlato male di te in tua assenza",
+            "lo che rileggo il suo ultimo messaggio per la settima volta cercando un doppio senso romantico","Quando vedi che sta online ma non ti scrive",
+            "Quando dici che farai una pausa di 5 minuti e poi diventa un'ora","Il momento in cui ti accorgi che sei l'unico a non aver capito la battuta",
+            "Quando il gymbro aiuta un'altra ragazza, tradendoti. (Non sa neanche il tuo nome)","Quando vedi Quella persona",
+            "Quando incontri il gymbro in palestra","Quando il gymbro sta limonando duro in palestra davanti a te",
+            "Quando un 'cinque minuti' di ritardo diventano 30 minuti di attesa","lo che cerco la mia dignità, dopo la settima volta che scrivo al gymbro, senza risposta",
+            "Quando pensi di aver vinto una discussione e poi scopri che eri tu a sbagliarti","Quando qualcuno ti dice 'è solo un piccolo errore' e ti ricordi di tutto ciò che è andato storto",
+            "Quando il tuo team perde, ma tutti sono comunque felici perché finalmente è finita","La faccia che fai quando qualcuno ti chiede di spiegare la tua vita amorosa",
+            "Quando ogni tanto pensi di avere tutto sotto controllo... poi ti svegli","Quando il tuo futuro ti guarda con delusione già adesso",
+            "Quando dici \"faccio un power nap\" e ti svegli nel 2048","Quando dici \"sono solo stanco\" ma hai appena toccato il fondo esistenziale",
+            "Quando provi a non ridere in classe ma fallisci miseramente","Quando mandi un \"ok\" ma volevi dire \"sto urlando dentro\"",
+            "Quando provi a essere positivo ma la vita non collabora","Quando vai dal parrucchiere e ti tocca fingere che ti piaccia",
+            "Quando ti impegni a fare la persona matura... e poi ti offendi per una battuta","Quando ti chiedono \"come stai?\" e non sai da che trauma cominciare",
+            "Quando provi a fare una cosa produttiva e il karma ti butta giù il Wi-Fi","Quando chiedi un consiglio e ti rispondono con \"boh, vedi tu\"",
+            "Quando pensi che domani andrà meglio, ma domani ti smentisce con entusiasmo","Quando rispondi \"tutto ok\" con la voce rotta e lo sguardo perso nel vuoto",
+            "Quando la tua unica fonte di motivazione è il senso di colpa","Quando apri Instagram e vedi che tutti sono in vacanza tranne te e i piccioni",
+            "Quando ti accorgi che il \"tra 5 minuti arrivo\" non vale nemmeno per te stesso","Quando dici \"è solo una giornata no\" ma è così da aprile",
+            "Quando dici che non ti interessa... ma controlli le storie ogni 5 minuti","Quando finisci il binge watching e ti chiedi se hai ancora uno scopo nella vita",
+            "Quando l'ansia ti sveglia prima della sveglia","Quando pensi che non può andare peggio... e la vita accetta la sfida",
+            "Quando scopri che le cose non si sistemano solo ignorandole","Quando il prof dice \"è una verifica semplice\" e tu inizi a sudare in tre lingue",
+            "Quando stai zitto ma il tuo viso ha già urlato tutto","Quando il karma ti restituisce tutto... con gli interessi",
+            "Quando dici \"ce la farò\" e poi Google ti suggerisce psicologi nella zona","Quando dici \"va tutto sotto controllo\" mentre il mondo brucia alle tue spalle",
+            "Quando il prof dice \"la verifica è breve\" ma ha lo stesso numero di domande della Bibbia","Quando il tuo piano era \"improvvisare\" e ora sei nel panico",
+            "Quando la tua unica relazione stabile è con la tua coperta","Quando passi da \"odio tutti\" a \"nessuno mi cerca\" in 3 secondi netti",
+            "Quando ti dicono \"esprimiti\" ma poi ti giudicano per ogni parola","Quando provi a meditare e finisci a litigare con la tua stessa mente",
+            "Quando l'unica cosa che cresce è l'ansia, non tu","Quando il tuo piano B è sperare che il piano A funzioni per miracolo",
+            "Quando cerchi conforto e trovi solo meme tristi ma accurati","Quando ti svegli alle 3 di notte con pensieri profondi tipo \"ho mai restituito quel libro?\"",
+            "Quando cerchi di ricordare perché hai preso quella decisione","Quando dici che stai uscendo dalla comfort zone ma stai solo cambiando stanza",
+            "Quando hai mille cose da fare e decidi di sistemare le icone del desktop","Quando parli da solo perché almeno così qualcuno ti ascolta",
+            "Quando dici \"non mi interessa\" e poi ti fai 3 profili fake"
         ];
+
 
         let peer = null;
         let myPeerId = null;
@@ -1026,21 +1081,59 @@
 
         function renderCardSelection() {
             const hasSubmitted = gameState.selectedCard !== null;
-            const html = `
-                <h3 style="text-align: center; margin: 20px 0;">
-                    ${hasSubmitted ? '✓ Carta inviata! Aspetta gli altri...' : 'Scegli la tua carta migliore:'}
-                </h3>
-                <div class="cards-grid">
-                    ${gameState.myCards.map((card, i) => `
-                        <button class="card ${gameState.selectedCard === i ? 'selected' : ''}" 
-                                onclick="selectCard(${i})"
-                                ${hasSubmitted ? 'disabled' : ''}>
-                            ${card}
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-            document.getElementById('game-content').innerHTML = html;
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // Mobile: Swipeable cards
+                const cardsHTML = gameState.myCards.map((card, i) => `
+                    <button class="card ${gameState.selectedCard === i ? 'selected' : ''}" 
+                            onclick="selectCardMobile(${i})"
+                            ${hasSubmitted ? 'disabled' : ''}>
+                        ${card}
+                    </button>
+                `).join('');
+                
+                const dotsHTML = gameState.myCards.map((_, i) => 
+                    `<div class="swipe-dot ${i === 0 ? 'active' : ''}"></div>`
+                ).join('');
+                
+                const html = `
+                    <h3 style="text-align: center; margin: 20px 0;">
+                        ${hasSubmitted ? '✓ Carta inviata! Aspetta gli altri...' : 'Scorri per vedere le carte:'}
+                    </h3>
+                    <div class="cards-grid">
+                        <div class="cards-swipe-container">
+                            ${cardsHTML}
+                        </div>
+                    </div>
+                    <div class="swipe-indicators">${dotsHTML}</div>
+                    ${!hasSubmitted ? '<div class="swipe-hint">👈 Swipe per cambiare carta • Tap per selezionare 👉</div>' : ''}
+                `;
+                document.getElementById('game-content').innerHTML = html;
+                
+                // Reset swipe position
+                currentCardIndex = 0;
+                
+                // Initialize swipe after DOM update
+                setTimeout(() => initSwipe(), 100);
+            } else {
+                // Desktop: Grid layout
+                const html = `
+                    <h3 style="text-align: center; margin: 20px 0;">
+                        ${hasSubmitted ? '✓ Carta inviata! Aspetta gli altri...' : 'Scegli la tua carta migliore:'}
+                    </h3>
+                    <div class="cards-grid">
+                        ${gameState.myCards.map((card, i) => `
+                            <button class="card ${gameState.selectedCard === i ? 'selected' : ''}" 
+                                    onclick="selectCard(${i})"
+                                    ${hasSubmitted ? 'disabled' : ''}>
+                                ${card}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                document.getElementById('game-content').innerHTML = html;
+            }
         }
 
         function selectCard(index) {
@@ -1081,17 +1174,54 @@
         }
 
         function renderVoting() {
-            const html = `
-                <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ Scegli il meme migliore:</h3>
-                <div class="cards-grid">
-                    ${gameState.submissions.map((sub, i) => `
-                        <button class="card" onclick="voteCard(${i})">
-                            ${sub.card}
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-            document.getElementById('game-content').innerHTML = html;
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // Mobile: Swipeable cards
+                const cardsHTML = gameState.submissions.map((sub, i) => `
+                    <button class="card" onclick="voteCardMobile(${i})">
+                        ${sub.card}
+                    </button>
+                `).join('');
+                
+                const dotsHTML = gameState.submissions.map((_, i) => 
+                    `<div class="swipe-dot ${i === 0 ? 'active' : ''}"></div>`
+                ).join('');
+                
+                const html = `
+                    <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ Scegli il meme migliore:</h3>
+                    <div class="cards-grid">
+                        <div class="cards-swipe-container">
+                            ${cardsHTML}
+                        </div>
+                    </div>
+                    <div class="swipe-indicators">${dotsHTML}</div>
+                    <div class="swipe-hint">👈 Swipe per cambiare • Tap per votare 👉</div>
+                `;
+                document.getElementById('game-content').innerHTML = html;
+                
+                currentCardIndex = 0;
+                setTimeout(() => initSwipe(), 100);
+            } else {
+                // Desktop: Grid layout
+                const html = `
+                    <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ Scegli il meme migliore:</h3>
+                    <div class="cards-grid">
+                        ${gameState.submissions.map((sub, i) => `
+                            <button class="card" onclick="voteCard(${i})">
+                                ${sub.card}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                document.getElementById('game-content').innerHTML = html;
+            }
+        }
+
+        function voteCardMobile(index) {
+            currentCardIndex = index;
+            updateSwipePosition(300);
+            setTimeout(() => voteCard(index), 350);
         }
 
         function voteCard(index) {
@@ -1228,6 +1358,142 @@
             if (confirm('Vuoi davvero lasciare la partita?')) {
                 location.reload();
             }
+        }
+
+        // SWIPE FUNCTIONALITY FOR MOBILE
+        let currentCardIndex = 0;
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+        let swipeContainer = null;
+
+        function initSwipe() {
+            if (window.innerWidth > 768) return; // Only for mobile
+
+            swipeContainer = document.querySelector('.cards-swipe-container');
+            if (!swipeContainer) return;
+
+            const cards = swipeContainer.querySelectorAll('.card');
+            if (cards.length === 0) return;
+
+            // Touch events
+            swipeContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+            swipeContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+            swipeContainer.addEventListener('touchend', handleTouchEnd);
+
+            // Mouse events for testing on desktop
+            swipeContainer.addEventListener('mousedown', handleMouseDown);
+            swipeContainer.addEventListener('mousemove', handleMouseMove);
+            swipeContainer.addEventListener('mouseup', handleMouseEnd);
+            swipeContainer.addEventListener('mouseleave', handleMouseEnd);
+
+            updateSwipePosition(0);
+        }
+
+        function handleTouchStart(e) {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+            if (swipeContainer) {
+                swipeContainer.style.transition = 'none';
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (!isDragging || !swipeContainer) return;
+            
+            e.preventDefault();
+            currentX = e.touches[0].clientX;
+            const diff = currentX - startX;
+            const cards = swipeContainer.querySelectorAll('.card');
+            const offset = -currentCardIndex * 100 + (diff / swipeContainer.offsetWidth) * 100;
+            
+            swipeContainer.style.transform = `translateX(${offset}%)`;
+        }
+
+        function handleTouchEnd() {
+            if (!isDragging || !swipeContainer) return;
+            
+            isDragging = false;
+            const diff = currentX - startX;
+            const threshold = 50;
+            const cards = swipeContainer.querySelectorAll('.card');
+
+            if (diff > threshold && currentCardIndex > 0) {
+                // Swipe right - previous card
+                currentCardIndex--;
+            } else if (diff < -threshold && currentCardIndex < cards.length - 1) {
+                // Swipe left - next card
+                currentCardIndex++;
+            }
+
+            updateSwipePosition(300);
+        }
+
+        function handleMouseDown(e) {
+            startX = e.clientX;
+            isDragging = true;
+            if (swipeContainer) {
+                swipeContainer.style.transition = 'none';
+            }
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging || !swipeContainer) return;
+            
+            currentX = e.clientX;
+            const diff = currentX - startX;
+            const cards = swipeContainer.querySelectorAll('.card');
+            const offset = -currentCardIndex * 100 + (diff / swipeContainer.offsetWidth) * 100;
+            
+            swipeContainer.style.transform = `translateX(${offset}%)`;
+        }
+
+        function handleMouseEnd() {
+            if (!isDragging || !swipeContainer) return;
+            
+            isDragging = false;
+            const diff = currentX - startX;
+            const threshold = 50;
+            const cards = swipeContainer.querySelectorAll('.card');
+
+            if (diff > threshold && currentCardIndex > 0) {
+                currentCardIndex--;
+            } else if (diff < -threshold && currentCardIndex < cards.length - 1) {
+                currentCardIndex++;
+            }
+
+            updateSwipePosition(300);
+        }
+
+        function updateSwipePosition(duration = 0) {
+            if (!swipeContainer) return;
+            
+            swipeContainer.style.transition = duration > 0 ? `transform ${duration}ms ease-out` : 'none';
+            swipeContainer.style.transform = `translateX(-${currentCardIndex * 100}%)`;
+
+            updateSwipeDots();
+        }
+
+        function updateSwipeDots() {
+            const dots = document.querySelectorAll('.swipe-dot');
+            dots.forEach((dot, index) => {
+                if (index === currentCardIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        function selectCardMobile(index) {
+            // Navigate to the card
+            currentCardIndex = index;
+            updateSwipePosition(300);
+            
+            // Wait for animation, then select
+            setTimeout(() => {
+                selectCard(index);
+            }, 350);
         }
 
         console.log('Meme Game P2P loaded successfully!');
