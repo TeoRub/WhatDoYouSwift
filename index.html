@@ -516,7 +516,7 @@
             <div id="status-container"></div>
 
             <div class="players-list">
-                <h3>Giocatori (<span id="player-count">0</span>)</h3>
+                <h3>Giocatori (<span id="player-count">0</span>/8)</h3>
                 <div id="players-container"></div>
             </div>
 
@@ -538,7 +538,7 @@
                         <input type="radio" name="gameMode" value="textOnly" onchange="updateGameMode()">
                         <div>
                             <strong>📝 Solo Testo</strong>
-                            <div style="font-size: 0.9rem; color: #666;">Tutti inviano una frase, il giudice sceglie la migliore</div>
+                            <div style="font-size: 0.9rem; color: #666;">Gli altri inviano frasi, il giudice sceglie la migliore (senza immagini)</div>
                         </div>
                     </label>
                 </div>
@@ -572,7 +572,7 @@
                 🚀 Avvia Partita
             </button>
 
-            <button class="btn" onclick="leaveLobby()" style="background: #c17d9a; color: white;">
+            <button class="btn" onclick="leaveLobby()" style="background: #c67697; color: white;">
                 ← Torna alla Home
             </button>
         </div>
@@ -845,9 +845,8 @@
                             console.log('Card submitted:', data.submission);
                             gameState.submissions.push(data.submission);
                             
-                            const expectedSubmissions = gameState.gameMode === 'textOnly' 
-                                ? gameState.players.length 
-                                : gameState.players.length - 1;
+                            // Always N-1 submissions (judge never submits)
+                            const expectedSubmissions = gameState.players.length - 1;
                             
                             if (gameState.submissions.length === expectedSubmissions) {
                                 startVotingPhase();
@@ -1064,11 +1063,9 @@
                     contentDiv.innerHTML = `<div class="status-message"><h3>⏳ Il giudice sta scegliendo l'immagine...</h3><p>Aspetta che ${judge.name} scelga il meme!</p></div>`;
                 }
             } else if (gameState.phase === 'submitting') {
-                if (isJudge && gameState.gameMode === 'textOnly') {
-                    // In text-only mode, judge also submits
-                    renderCardSelection();
-                } else if (isJudge) {
-                    contentDiv.innerHTML = '<div class="status-message"><h3>👨‍⚖️ Sei il giudice!</h3><p>Aspetta che gli altri giocatori inviino le carte...</p></div>';
+                if (isJudge) {
+                    // In text-only mode, judge DOES NOT submit - just waits
+                    contentDiv.innerHTML = '<div class="status-message"><h3>👨‍⚖️ Sei il giudice!</h3><p>Aspetta che gli altri giocatori inviino le loro frasi...</p></div>';
                 } else {
                     renderCardSelection();
                 }
@@ -1196,10 +1193,8 @@
             if (isHost) {
                 gameState.submissions.push(submission);
                 
-                // In text-only mode, everyone including judge submits
-                const expectedSubmissions = gameState.gameMode === 'textOnly' 
-                    ? gameState.players.length 
-                    : gameState.players.length - 1;
+                // In TUTTE le modalità, solo i non-giudici inviano (N-1)
+                const expectedSubmissions = gameState.players.length - 1;
                 
                 if (gameState.submissions.length === expectedSubmissions) {
                     startVotingPhase();
@@ -1338,12 +1333,12 @@
                 gameState.phase = 'judge-selecting';
             }
 
-            // IMPORTANTE: Rifornisci le carte a TUTTI i giocatori
+            // IMPORTANTE: Rifornisci le carte a TUTTI i giocatori con NUOVE carte
             gameState.players.forEach(player => {
-                // Riempi fino a 7 carte
-                while (player.cards.length < 7) {
-                    const randomCard = TEXT_CARDS[Math.floor(Math.random() * TEXT_CARDS.length)];
-                    player.cards.push(randomCard);
+                const cardsNeeded = 7 - player.cards.length;
+                if (cardsNeeded > 0) {
+                    const newCards = dealNewCards(player, cardsNeeded);
+                    player.cards = [...player.cards, ...newCards];
                 }
             });
 
@@ -1378,8 +1373,34 @@
         }
 
         function getRandomCards(count) {
-            const shuffled = [...TEXT_CARDS].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, count);
+            const available = [...TEXT_CARDS];
+            const selected = [];
+            
+            for (let i = 0; i < count && available.length > 0; i++) {
+                const randomIndex = Math.floor(Math.random() * available.length);
+                selected.push(available[randomIndex]);
+                available.splice(randomIndex, 1); // Rimuovi per evitare duplicati
+            }
+            
+            return selected;
+        }
+
+        function dealNewCards(player, count) {
+            // Ottieni le carte che il giocatore già ha
+            const currentCards = player.cards || [];
+            
+            // Pool di carte disponibili (escludi quelle che già ha)
+            const available = TEXT_CARDS.filter(card => !currentCards.includes(card));
+            
+            // Se non ci sono abbastanza carte uniche, usa tutte
+            const cardsToAdd = [];
+            for (let i = 0; i < count && available.length > 0; i++) {
+                const randomIndex = Math.floor(Math.random() * available.length);
+                cardsToAdd.push(available[randomIndex]);
+                available.splice(randomIndex, 1);
+            }
+            
+            return cardsToAdd;
         }
 
         function showScreen(screenId) {
