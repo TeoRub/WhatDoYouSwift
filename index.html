@@ -516,7 +516,7 @@
             <div id="status-container"></div>
 
             <div class="players-list">
-                <h3>Giocatori (<span id="player-count">0</span>/8)</h3>
+                <h3>Giocatori (<span id="player-count">0</span>)</h3>
                 <div id="players-container"></div>
             </div>
 
@@ -572,7 +572,7 @@
                 🚀 Avvia Partita
             </button>
 
-            <button class="btn" onclick="leaveLobby()" style="background: #c67697; color: white;">
+            <button class="btn" onclick="leaveLobby()" style="background: #c17d9a; color: white;">
                 ← Torna alla Home
             </button>
         </div>
@@ -1333,13 +1333,10 @@
                 gameState.phase = 'judge-selecting';
             }
 
-            // IMPORTANTE: Rifornisci le carte a TUTTI i giocatori con NUOVE carte
+            // IMPORTANTE: SOSTITUISCI COMPLETAMENTE tutte le carte all'inizio di ogni round
             gameState.players.forEach(player => {
-                const cardsNeeded = 7 - player.cards.length;
-                if (cardsNeeded > 0) {
-                    const newCards = dealNewCards(player, cardsNeeded);
-                    player.cards = [...player.cards, ...newCards];
-                }
+                // RESET completo: dai 7 carte NUOVE a tutti
+                player.cards = getRandomCards(7);
             });
 
             const updateData = {
