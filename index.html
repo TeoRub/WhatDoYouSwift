@@ -178,6 +178,30 @@
             margin-bottom: 10px;
         }
 
+        .player-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kick-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-left: 10px;
+            transition: all 0.2s;
+        }
+
+        .kick-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
         .ready-badge {
             padding: 5px 15px;
             border-radius: 20px;
@@ -241,7 +265,7 @@
 
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 20px;
             margin: 20px 0;
         }
@@ -496,6 +520,50 @@
                 <div id="players-container"></div>
             </div>
 
+            <!-- Game Mode Selection (Host Only) -->
+            <div id="game-mode-section" style="display: none; margin: 20px 0; padding: 20px; background: #faf8f9; border-radius: 10px;">
+                <h3 style="margin-bottom: 15px; color: #c67697;">⚙️ Impostazioni Partita</h3>
+                
+                <!-- Game Mode -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 10px; color: #c17d9a;">Modalità di Gioco</h4>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: white; border-radius: 8px; margin-bottom: 10px;">
+                        <input type="radio" name="gameMode" value="images" checked onchange="updateGameMode()">
+                        <div>
+                            <strong>🖼️ Con Immagini</strong>
+                            <div style="font-size: 0.9rem; color: #666;">Il giudice sceglie l'immagine, gli altri rispondono con le carte</div>
+                        </div>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: white; border-radius: 8px;">
+                        <input type="radio" name="gameMode" value="textOnly" onchange="updateGameMode()">
+                        <div>
+                            <strong>📝 Solo Testo</strong>
+                            <div style="font-size: 0.9rem; color: #666;">Tutti inviano una frase, il giudice sceglie la migliore</div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Rounds to Win -->
+                <div>
+                    <h4 style="margin-bottom: 10px; color: #c17d9a;">Punti per Vincere</h4>
+                    <div style="background: white; padding: 15px; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <label style="flex: 1;">
+                                <input type="range" id="rounds-slider" min="3" max="15" value="5" 
+                                       oninput="updateRoundsDisplay(this.value)" 
+                                       style="width: 100%; accent-color: #c67697;">
+                            </label>
+                            <div style="min-width: 80px; text-align: center; font-size: 1.5rem; font-weight: bold; color: #c67697;">
+                                <span id="rounds-display">5</span> punti
+                            </div>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 0.85rem; color: #666; text-align: center;">
+                            Il primo giocatore a raggiungere <span id="rounds-display-text">5</span> punti vince
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <button class="btn btn-secondary" onclick="toggleReady()">
                 ✓ Sono Pronto!
             </button>
@@ -504,7 +572,7 @@
                 🚀 Avvia Partita
             </button>
 
-            <button class="btn" onclick="leaveLobby()" style="background: #dc3545; color: white;">
+            <button class="btn" onclick="leaveLobby()" style="background: #c17d9a; color: white;">
                 ← Torna alla Home
             </button>
         </div>
@@ -591,7 +659,9 @@
             phase: 'lobby',
             submissions: [],
             myCards: [],
-            selectedCard: null
+            selectedCard: null,
+            gameMode: 'images', // 'images' or 'textOnly'
+            roundsToWin: 5
         };
 
         function initPeer(callback) {
@@ -775,8 +845,11 @@
                             console.log('Card submitted:', data.submission);
                             gameState.submissions.push(data.submission);
                             
-                            const nonJudgePlayers = gameState.players.length - 1;
-                            if (gameState.submissions.length === nonJudgePlayers) {
+                            const expectedSubmissions = gameState.gameMode === 'textOnly' 
+                                ? gameState.players.length 
+                                : gameState.players.length - 1;
+                            
+                            if (gameState.submissions.length === expectedSubmissions) {
                                 startVotingPhase();
                             }
                         }
@@ -819,20 +892,32 @@
             gameState.players.forEach(player => {
                 const div = document.createElement('div');
                 div.className = 'player-item';
+                
+                const canKick = isHost && player.id !== myPeerId;
+                
                 div.innerHTML = `
-                    <span>
-                        ${player.name} 
-                        ${player.isHost ? '👑' : ''}
-                        ${player.id === myPeerId ? '(Tu)' : ''}
-                    </span>
-                    <span class="ready-badge ${player.ready ? 'ready' : 'not-ready'}">
-                        ${player.ready ? '✓ Pronto' : 'In attesa'}
-                    </span>
+                    <div class="player-info">
+                        <span>
+                            ${player.name} 
+                            ${player.isHost ? '👑' : ''}
+                            ${player.id === myPeerId ? '(Tu)' : ''}
+                        </span>
+                        <span class="ready-badge ${player.ready ? 'ready' : 'not-ready'}">
+                            ${player.ready ? '✓ Pronto' : 'In attesa'}
+                        </span>
+                    </div>
+                    ${canKick ? `<button class="kick-btn" onclick="kickPlayer('${player.id}')">❌ Rimuovi</button>` : ''}
                 `;
                 container.appendChild(div);
             });
 
             document.getElementById('player-count').textContent = gameState.players.length;
+
+            // Show/hide game mode section for host
+            const gameModeSection = document.getElementById('game-mode-section');
+            if (gameModeSection) {
+                gameModeSection.style.display = isHost ? 'block' : 'none';
+            }
 
             if (isHost) {
                 const allReady = gameState.players.every(p => p.ready) && gameState.players.length >= 3;
@@ -859,6 +944,44 @@
             updatePlayersUI();
         }
 
+        function kickPlayer(playerId) {
+            if (!isHost) return;
+            
+            if (confirm('Vuoi davvero rimuovere questo giocatore?')) {
+                // Close connection
+                if (connections[playerId]) {
+                    connections[playerId].close();
+                    delete connections[playerId];
+                }
+                
+                // Remove from players list
+                gameState.players = gameState.players.filter(p => p.id !== playerId);
+                
+                // Notify all players
+                broadcast({ type: 'players-update', players: gameState.players });
+                updatePlayersUI();
+            }
+        }
+
+        function updateGameMode() {
+            if (!isHost) return;
+            
+            const selectedMode = document.querySelector('input[name="gameMode"]:checked').value;
+            gameState.gameMode = selectedMode;
+            
+            console.log('Game mode set to:', selectedMode);
+        }
+
+        function updateRoundsDisplay(value) {
+            if (!isHost) return;
+            
+            gameState.roundsToWin = parseInt(value);
+            document.getElementById('rounds-display').textContent = value;
+            document.getElementById('rounds-display-text').textContent = value;
+            
+            console.log('Rounds to win set to:', value);
+        }
+
         function startGame() {
             if (!isHost) return;
 
@@ -866,9 +989,15 @@
             
             gameState.currentRound = 1;
             gameState.judgeIndex = Math.floor(Math.random() * gameState.players.length);
-            gameState.phase = 'judge-selecting';
             gameState.submissions = [];
             gameState.currentImage = null;
+            
+            // Set phase based on game mode
+            if (gameState.gameMode === 'textOnly') {
+                gameState.phase = 'submitting'; // Skip image selection
+            } else {
+                gameState.phase = 'judge-selecting'; // Judge picks image
+            }
             
             gameState.players.forEach(player => {
                 player.cards = getRandomCards(7);
@@ -880,7 +1009,9 @@
                 currentRound: gameState.currentRound,
                 judgeIndex: gameState.judgeIndex,
                 currentImage: null,
-                phase: gameState.phase
+                phase: gameState.phase,
+                gameMode: gameState.gameMode,
+                roundsToWin: gameState.roundsToWin
             };
 
             broadcast({ type: 'start-game', gameData });
@@ -910,11 +1041,12 @@
             }
             
             const imageContainer = document.getElementById('image-container-game');
-            if (gameState.currentImage) {
+            // Hide image container in text-only mode
+            if (gameState.gameMode === 'textOnly' || !gameState.currentImage) {
+                imageContainer.style.display = 'none';
+            } else if (gameState.currentImage) {
                 document.getElementById('current-meme').src = gameState.currentImage.url;
                 imageContainer.style.display = 'block';
-            } else {
-                imageContainer.style.display = 'none';
             }
 
             const scoresContainer = document.getElementById('scores-container');
@@ -932,7 +1064,10 @@
                     contentDiv.innerHTML = `<div class="status-message"><h3>⏳ Il giudice sta scegliendo l'immagine...</h3><p>Aspetta che ${judge.name} scelga il meme!</p></div>`;
                 }
             } else if (gameState.phase === 'submitting') {
-                if (isJudge) {
+                if (isJudge && gameState.gameMode === 'textOnly') {
+                    // In text-only mode, judge also submits
+                    renderCardSelection();
+                } else if (isJudge) {
                     contentDiv.innerHTML = '<div class="status-message"><h3>👨‍⚖️ Sei il giudice!</h3><p>Aspetta che gli altri giocatori inviino le carte...</p></div>';
                 } else {
                     renderCardSelection();
@@ -1049,17 +1184,30 @@
                 cardIndex: index
             };
 
+            // Rimuovi la carta dalla mano locale
+            gameState.myCards.splice(index, 1);
+            
+            // IMPORTANTE: Aggiorna anche nel player globale
+            const me = gameState.players.find(p => p.id === myPeerId);
+            if (me) {
+                me.cards = [...gameState.myCards];
+            }
+
             if (isHost) {
                 gameState.submissions.push(submission);
-                const nonJudgePlayers = gameState.players.length - 1;
-                if (gameState.submissions.length === nonJudgePlayers) {
+                
+                // In text-only mode, everyone including judge submits
+                const expectedSubmissions = gameState.gameMode === 'textOnly' 
+                    ? gameState.players.length 
+                    : gameState.players.length - 1;
+                
+                if (gameState.submissions.length === expectedSubmissions) {
                     startVotingPhase();
                 }
             } else {
                 hostConnection.send({ type: 'submit-card', submission });
             }
 
-            gameState.myCards.splice(index, 1);
             renderCardSelection();
         }
 
@@ -1149,7 +1297,7 @@
             updateGameUI();
 
             setTimeout(() => {
-                if (winnerPlayer && winnerPlayer.score >= 5) {
+                if (winnerPlayer && winnerPlayer.score >= gameState.roundsToWin) {
                     alert(`🎉 ${winnerPlayer.name} ha vinto la partita!`);
                     location.reload();
                 } else {
@@ -1179,14 +1327,23 @@
 
             gameState.currentRound++;
             gameState.judgeIndex = Math.floor(Math.random() * gameState.players.length);
-            gameState.phase = 'judge-selecting';
             gameState.submissions = [];
             gameState.selectedCard = null;
             gameState.currentImage = null;
+            
+            // Set phase based on game mode
+            if (gameState.gameMode === 'textOnly') {
+                gameState.phase = 'submitting';
+            } else {
+                gameState.phase = 'judge-selecting';
+            }
 
+            // IMPORTANTE: Rifornisci le carte a TUTTI i giocatori
             gameState.players.forEach(player => {
+                // Riempi fino a 7 carte
                 while (player.cards.length < 7) {
-                    player.cards.push(TEXT_CARDS[Math.floor(Math.random() * TEXT_CARDS.length)]);
+                    const randomCard = TEXT_CARDS[Math.floor(Math.random() * TEXT_CARDS.length)];
+                    player.cards.push(randomCard);
                 }
             });
 
@@ -1197,7 +1354,9 @@
                 phase: gameState.phase,
                 currentImage: null,
                 submissions: [],
-                players: gameState.players
+                players: gameState.players,
+                gameMode: gameState.gameMode,
+                roundsToWin: gameState.roundsToWin
             };
 
             broadcast(updateData);
@@ -1207,9 +1366,11 @@
         function updateGameState(data) {
             Object.assign(gameState, data);
             
+            // IMPORTANTE: Aggiorna le TUE carte dal player sincronizzato
             const me = gameState.players.find(p => p.id === myPeerId);
             if (me && me.cards) {
-                gameState.myCards = me.cards;
+                gameState.myCards = [...me.cards]; // Copia le carte
+                console.log('My cards updated:', gameState.myCards.length, 'cards');
             }
             
             gameState.selectedCard = null;
