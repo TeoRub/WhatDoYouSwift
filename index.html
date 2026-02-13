@@ -520,47 +520,61 @@
                 <div id="players-container"></div>
             </div>
 
-            <!-- Game Mode Selection (Host Only) -->
-            <div id="game-mode-section" style="display: none; margin: 20px 0; padding: 20px; background: #faf8f9; border-radius: 10px;">
-                <h3 style="margin-bottom: 15px; color: #c67697;">⚙️ Impostazioni Partita</h3>
-                
-                <!-- Game Mode -->
-                <div style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 10px; color: #c17d9a;">Modalità di Gioco</h4>
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: white; border-radius: 8px; margin-bottom: 10px;">
-                        <input type="radio" name="gameMode" value="images" checked onchange="updateGameMode()">
-                        <div>
-                            <strong>🖼️ Con Immagini</strong>
-                            <div style="font-size: 0.9rem; color: #666;">Il giudice sceglie l'immagine, gli altri rispondono con le carte</div>
-                        </div>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: white; border-radius: 8px;">
-                        <input type="radio" name="gameMode" value="textOnly" onchange="updateGameMode()">
-                        <div>
-                            <strong>📝 Solo Testo</strong>
-                            <div style="font-size: 0.9rem; color: #666;">Gli altri inviano frasi, il giudice sceglie la migliore (senza immagini)</div>
-                        </div>
-                    </label>
-                </div>
+            <!-- Settings Button (Host Only) -->
+            <button id="settings-btn" class="settings-btn" onclick="openSettings()" style="display: none;">
+                ⚙️ Impostazioni Partita
+            </button>
 
-                <!-- Rounds to Win -->
-                <div>
-                    <h4 style="margin-bottom: 10px; color: #c17d9a;">Punti per Vincere</h4>
-                    <div style="background: white; padding: 15px; border-radius: 8px;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <label style="flex: 1;">
-                                <input type="range" id="rounds-slider" min="3" max="15" value="5" 
-                                       oninput="updateRoundsDisplay(this.value)" 
-                                       style="width: 100%; accent-color: #c67697;">
-                            </label>
-                            <div style="min-width: 80px; text-align: center; font-size: 1.5rem; font-weight: bold; color: #c67697;">
-                                <span id="rounds-display">5</span> punti
+            <!-- Settings Modal/Popup -->
+            <div id="settings-modal" class="settings-modal" onclick="closeSettingsIfOutside(event)">
+                <div class="settings-content" onclick="event.stopPropagation()">
+                    <div class="settings-header">
+                        <h3>⚙️ Impostazioni</h3>
+                        <button class="close-settings" onclick="closeSettings()">×</button>
+                    </div>
+
+                    <!-- Game Mode -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 10px; color: #c17d9a;">Modalità di Gioco</h4>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #faf8f9; border-radius: 8px; margin-bottom: 10px;">
+                            <input type="radio" name="gameMode" value="images" checked onchange="updateGameMode()">
+                            <div>
+                                <strong>🖼️ Con Immagini</strong>
+                                <div style="font-size: 0.9rem; color: #666;">Il giudice sceglie l'immagine, gli altri rispondono con le carte</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #faf8f9; border-radius: 8px;">
+                            <input type="radio" name="gameMode" value="textOnly" onchange="updateGameMode()">
+                            <div>
+                                <strong>📝 Solo Testo</strong>
+                                <div style="font-size: 0.9rem; color: #666;">Gli altri inviano frasi, il giudice sceglie la migliore (senza immagini)</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Rounds to Win -->
+                    <div>
+                        <h4 style="margin-bottom: 10px; color: #c17d9a;">Punti per Vincere</h4>
+                        <div style="background: #faf8f9; padding: 15px; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <label style="flex: 1;">
+                                    <input type="range" id="rounds-slider" min="3" max="15" value="5" 
+                                           oninput="updateRoundsDisplay(this.value)" 
+                                           style="width: 100%; accent-color: #c67697;">
+                                </label>
+                                <div style="min-width: 80px; text-align: center; font-size: 1.5rem; font-weight: bold; color: #c67697;">
+                                    <span id="rounds-display">5</span> punti
+                                </div>
+                            </div>
+                            <div style="margin-top: 8px; font-size: 0.85rem; color: #666; text-align: center;">
+                                Il primo giocatore a raggiungere <span id="rounds-display-text">5</span> punti vince
                             </div>
                         </div>
-                        <div style="margin-top: 8px; font-size: 0.85rem; color: #666; text-align: center;">
-                            Il primo giocatore a raggiungere <span id="rounds-display-text">5</span> punti vince
-                        </div>
                     </div>
+
+                    <button class="btn btn-primary" onclick="closeSettings()" style="margin-top: 20px;">
+                        ✓ Salva Impostazioni
+                    </button>
                 </div>
             </div>
 
