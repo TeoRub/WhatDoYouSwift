@@ -457,7 +457,116 @@
             padding: 15px;
             border-radius: 10px;
             margin: 20px 0;
-            text-align: center;
+            text-align: left;
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        /* Settings Modal/Popup */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .settings-modal.active {
+            display: flex;
+        }
+
+        .settings-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f5afc9;
+        }
+
+        .settings-header h3 {
+            color: #c67697;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #ba99c5;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .close-settings:hover {
+            background: #edc6d5;
+            transform: rotate(90deg);
+        }
+
+        .settings-btn {
+            background: linear-gradient(135deg, #ba99c5 0%, #c67697 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .settings-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(186, 153, 197, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .settings-content {
+                margin: auto;
+                max-height: 90vh;
+            }
         }
 
         @media (max-width: 768px) {
@@ -752,14 +861,24 @@
 
             initPeer(() => {
                 isHost = false;
-                showStatus('Connessione in corso...');
+                showStatus('🔄 Connessione in corso...');
                 
+                console.log('Attempting to connect to:', roomCode);
                 const conn = peer.connect(roomCode);
                 hostConnection = conn;
+                
+                let connectionTimeout = setTimeout(() => {
+                    showError('⏱️ Timeout connessione. Possibili cause:\n• Codice errato\n• Host disconnesso\n• Problemi di rete/firewall\n\nProva:\n• Verifica il codice\n• Passa a WiFi se sei su dati mobili\n• Usa Chrome/Safari');
+                    console.error('Connection timeout');
+                }, 15000); // 15 secondi timeout
+
                 handleConnection(conn);
 
                 conn.on('open', () => {
-                    console.log('Connected to host');
+                    clearTimeout(connectionTimeout);
+                    console.log('✅ Connected to host successfully');
+                    showStatus('✅ Connesso! Invio dati...');
+                    
                     conn.send({
                         type: 'join',
                         player: { 
@@ -772,11 +891,17 @@
                     });
                     showScreen('lobby-screen');
                     document.getElementById('room-code').textContent = roomCode;
+                    showStatus('');
                 });
 
                 conn.on('error', (err) => {
-                    console.error('Connection error:', err);
-                    showError('Impossibile connettersi alla partita');
+                    clearTimeout(connectionTimeout);
+                    console.error('❌ Connection error:', err);
+                    showError('❌ Errore di connessione: ' + err.type + '\n\nProva:\n• Verifica il codice partita\n• Cambia rete (WiFi invece di dati mobili)\n• Usa browser Chrome o Safari');
+                });
+
+                conn.on('close', () => {
+                    console.log('Connection closed by host');
                 });
             });
         }
@@ -926,10 +1051,10 @@
 
             document.getElementById('player-count').textContent = gameState.players.length;
 
-            // Show/hide game mode section for host
-            const gameModeSection = document.getElementById('game-mode-section');
-            if (gameModeSection) {
-                gameModeSection.style.display = isHost ? 'block' : 'none';
+            // Show settings button for host
+            const settingsBtn = document.getElementById('settings-btn');
+            if (settingsBtn) {
+                settingsBtn.style.display = isHost ? 'flex' : 'none';
             }
 
             if (isHost) {
@@ -993,6 +1118,26 @@
             document.getElementById('rounds-display-text').textContent = value;
             
             console.log('Rounds to win set to:', value);
+        }
+
+        function openSettings() {
+            const modal = document.getElementById('settings-modal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settings-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function closeSettingsIfOutside(event) {
+            if (event.target.id === 'settings-modal') {
+                closeSettings();
+            }
         }
 
         function startGame() {
@@ -1426,7 +1571,9 @@
             const container = document.getElementById('error-container');
             if (container) {
                 container.innerHTML = `<div class="error-message">${msg}</div>`;
-                setTimeout(() => container.innerHTML = '', 5000);
+                // Errori di connessione restano più a lungo
+                const timeout = msg.includes('connessione') ? 10000 : 5000;
+                setTimeout(() => container.innerHTML = '', timeout);
             }
             console.error(msg);
         }
