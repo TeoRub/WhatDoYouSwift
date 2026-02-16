@@ -2115,7 +2115,7 @@
             currentX = e.touches[0].clientX;
             const diff = currentX - startX;
             const cards = swipeContainer.querySelectorAll('.card');
-            const offset = -currentCardIndex * 105 + (diff / swipeContainer.offsetWidth) * 105;
+            const offset = -currentCardIndex * 105.5 + (diff / swipeContainer.offsetWidth) * 105.5;
             
             swipeContainer.style.transform = `translateX(${offset}%)`;
         }
