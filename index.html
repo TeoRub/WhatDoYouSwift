@@ -1644,7 +1644,7 @@
                             ${MEME_IMAGES.map((img, i) => `
                                 <div class="image-card" onclick="selectJudgeImage(${i})">
                                     <img src="${img.url}" alt="${img.alt}">
-                                    <p style="margin-top: 10px; font-size: 0.85rem; color: #666;">${img.alt}</p>
+                                    <p style="margin-top: 10px; font-size: 0.85rem; color: #666; text-align: center;">${img.alt}</p>
                                 </div>
                             `).join('')}
                         </div>
@@ -2115,7 +2115,7 @@
             currentX = e.touches[0].clientX;
             const diff = currentX - startX;
             const cards = swipeContainer.querySelectorAll('.card');
-            const offset = -currentCardIndex * 100 + (diff / swipeContainer.offsetWidth) * 100;
+            const offset = -currentCardIndex * 105 + (diff / swipeContainer.offsetWidth) * 105;
             
             swipeContainer.style.transform = `translateX(${offset}%)`;
         }
