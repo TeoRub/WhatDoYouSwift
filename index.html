@@ -2115,8 +2115,8 @@
             currentX = e.touches[0].clientX;
             const diff = currentX - startX;
             const cards = swipeContainer.querySelectorAll('.card');
-            const offset = -currentCardIndex * 105.5 /*+ (diff / swipeContainer.offsetWidth) * 105.5*/;
-            console.log(offset);
+            const offset = -currentCardIndex * 100 + (diff / swipeContainer.offsetWidth) * 100;
+            
             swipeContainer.style.transform = `translateX(${offset}%)`;
         }
 
@@ -2153,8 +2153,8 @@
             currentX = e.clientX;
             const diff = currentX - startX;
             const cards = swipeContainer.querySelectorAll('.card');
-            const offset = -currentCardIndex * 100 + (diff / swipeContainer.offsetWidth) * 100;
-            
+            const offset = -currentCardIndex * 105.5 + (diff / swipeContainer.offsetWidth) * 100;
+            console.log(offset)
             swipeContainer.style.transform = `translateX(${offset}%)`;
         }
 
