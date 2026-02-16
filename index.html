@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>What do you Swift?</title>
+    <title>What do you Swift?</title>
     <link rel="icon" href="images/WhatDoYouSwift.jpg" type="image/jpg" />
     <script src="https://unpkg.com/peerjs@1.5.0/dist/peerjs.min.js"></script>
     <style>
@@ -305,8 +305,8 @@
         .image-front img {
             max-width: 80%;
             max-height: 80%;
-            object-fit: contain;
-            /*opacity: 0.3;
+            object-fit: contain/*;
+            opacity: 0.3;
             filter: blur(2px);*/
         }
 
@@ -779,7 +779,77 @@
             color: white;
         }
 
+        /* Image Zoom Modal */
+        .image-zoom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .image-zoom-modal.active {
+            display: flex;
+        }
+
+        .image-zoom-content {
+            max-width: 95vw;
+            max-height: 95vh;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .zoom-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 2rem;
+            color: #c67697;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        .zoom-close-btn:hover {
+            background: white;
+            transform: rotate(90deg);
+        }
+
+        /* Make images clickable on mobile */
         @media (max-width: 768px) {
+            .image-container img,
+            .image-back img,
+            .image-card-swipe img {
+                cursor: pointer;
+            }
+
             .settings-content {
                 margin: auto;
                 max-height: 90vh;
@@ -807,7 +877,7 @@
             <div style="text-align: center; margin-bottom: 20px;">
                 <img src="images/logo.png" alt="What do you Swift?" style="max-width: 300px; width: 80%; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
             </div>
-            <p>inizia il gioco</p>
+            <p class="subtitle">inizia il gioco</p>
 
             <div id="error-container"></div>
 
@@ -824,7 +894,7 @@
 
             <div class="input-group">
                 <label>CODICE PARTITA</label>
-                <input type="text"  class="btn btn-primary" id="game-code-input" placeholder="Inserisci il codice">
+                <input type="text" class="btn btn-primary" id="game-code-input" placeholder="Inserisci il codice">
             </div>
 
             <button class="btn btn-secondary" onclick="joinGame()">
@@ -848,8 +918,6 @@
                 <span class="game-code-value" id="room-code"></span>
                 <button class="copy-btn" onclick="copyRoomCode()">📋 Copia Codice</button>
             </div>
-
-            <div id="status-container"></div>
 
             <div class="players-list">
                 <h3>GIOCATORI (<span id="player-count">0</span>)</h3>
@@ -951,17 +1019,22 @@
                         <!-- Front: Logo nascosto -->
                         <div class="image-front">
                             <img src="images/WhatDoYouSwift.png" alt="Waiting">
-                            <!--<div class="waiting-text">🤔 In attesa...</div>-->
                         </div>
                         <!-- Back: Immagine selezionata -->
                         <div class="image-back">
-                            <img id="current-meme" src="" alt="Meme">
+                            <img id="current-meme" src="" alt="Meme" onclick="openImageZoom(this.src)">
                         </div>
                     </div>
                 </div>
             </div>
 
             <div id="game-content"></div>
+        </div>
+
+        <!-- Image Zoom Modal -->
+        <div id="image-zoom-modal" class="image-zoom-modal" onclick="closeImageZoom()">
+            <button class="zoom-close-btn" onclick="closeImageZoom()">×</button>
+            <img id="zoomed-image" class="image-zoom-content" src="" alt="Zoomed" onclick="event.stopPropagation()">
         </div>
     </div>
 
@@ -1119,7 +1192,6 @@
                 showScreen('lobby-screen');
                 document.getElementById('room-code').textContent = myPeerId;
                 updatePlayersUI();
-                showStatus('In attesa di giocatori...');
             });
         }
 
@@ -1139,7 +1211,6 @@
 
             initPeer(() => {
                 isHost = false;
-                showStatus('🔄 Connessione in corso...');
                 
                 console.log('Attempting to connect to:', roomCode);
                 const conn = peer.connect(roomCode);
@@ -1155,7 +1226,6 @@
                 conn.on('open', () => {
                     clearTimeout(connectionTimeout);
                     console.log('✅ Connected to host successfully');
-                    showStatus('✅ Connesso! Invio dati...');
                     
                     conn.send({
                         type: 'join',
@@ -1169,7 +1239,6 @@
                     });
                     showScreen('lobby-screen');
                     document.getElementById('room-code').textContent = roomCode;
-                    showStatus('');
                 });
 
                 conn.on('error', (err) => {
@@ -1539,7 +1608,7 @@
                 // Mobile: Swipeable images with selection button
                 const imagesHTML = MEME_IMAGES.map((img, i) => `
                     <div class="image-card-swipe">
-                        <img src="${img.url}" alt="${img.alt}">
+                        <img src="${img.url}" alt="${img.alt}" onclick="openImageZoom('${img.url}')">
                         <p style="margin-top: 10px; font-size: 0.85rem; color: #666; text-align: center;">${img.alt}</p>
                     </div>
                 `).join('');
@@ -1720,7 +1789,7 @@
                 ).join('');
                 
                 const html = `
-                    <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ SCEGLI IL MEME MIGLIORE:</h3>
+                    <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ Scegli il meme migliore:</h3>
                     <div class="cards-grid">
                         <div class="cards-swipe-container">
                             ${cardsHTML}
@@ -1737,7 +1806,7 @@
             } else {
                 // Desktop: Grid layout
                 const html = `
-                    <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ SCEGLI IL MEME MIGLIORE:</h3>
+                    <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ Scegli il meme migliore:</h3>
                     <div class="cards-grid">
                         ${gameState.submissions.map((sub, i) => `
                             <button class="card" onclick="voteCard(${i})">
@@ -1912,13 +1981,6 @@
             console.error(msg);
         }
 
-        function showStatus(msg) {
-            const container = document.getElementById('status-container');
-            if (container) {
-                container.innerHTML = `<div class="status-message"><p>${msg}</p></div>`;
-            }
-        }
-
         function copyRoomCode() {
             const code = document.getElementById('room-code').textContent;
             navigator.clipboard.writeText(code).then(() => {
@@ -1926,6 +1988,26 @@
             }).catch(() => {
                 alert('Codice: ' + code + '\n\nCopialo e invialo ai tuoi amici!');
             });
+        }
+
+        // Image Zoom Functions
+        function openImageZoom(imageSrc) {
+            if (window.innerWidth > 768) return; // Only on mobile
+            
+            const modal = document.getElementById('image-zoom-modal');
+            const zoomedImage = document.getElementById('zoomed-image');
+            
+            if (modal && zoomedImage) {
+                zoomedImage.src = imageSrc;
+                modal.classList.add('active');
+            }
+        }
+
+        function closeImageZoom() {
+            const modal = document.getElementById('image-zoom-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
         }
 
         function leaveLobby() {
