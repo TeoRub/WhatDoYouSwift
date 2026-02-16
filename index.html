@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>What do you Swift?</title>
+     <title>What do you Swift?</title>
     <link rel="icon" href="images/WhatDoYouSwift.jpg" type="image/jpg" />
     <script src="https://unpkg.com/peerjs@1.5.0/dist/peerjs.min.js"></script>
     <style>
@@ -255,12 +255,82 @@
             padding: 20px;
             margin-bottom: 20px;
             text-align: center;
+            perspective: 1000px;
         }
 
         .image-container img {
             max-width: 100%;
             max-height: 400px;
             border-radius: 10px;
+        }
+
+        /* Flip Animation for Image Reveal */
+        .image-flip-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            aspect-ratio: 4 / 3;
+        }
+
+        .image-flipper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .image-flipper.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .image-front, .image-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .image-front {
+            background: linear-gradient(135deg, #f5afc9 0%, #ba99c5 100%);
+            z-index: 2;
+        }
+
+        .image-front img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+            opacity: 0.3;
+            filter: blur(2px);
+        }
+
+        .image-back {
+            background: white;
+            transform: rotateY(180deg);
+        }
+
+        .image-back img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .waiting-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 3;
         }
 
         .cards-grid {
@@ -441,6 +511,7 @@
                 display: flex;
                 transition: transform 0.3s ease-out;
                 touch-action: pan-y;
+                background: transparent; /* 5. Transparent background */
             }
 
             .image-card-swipe {
@@ -457,13 +528,39 @@
             }
 
             .image-card-swipe:active {
-                border-color: #f5afc9;
+                /*border-color: #f5afc9;*/
                 transform: scale(0.98);
             }
 
             .image-card-swipe img {
                 width: 100%;
                 border-radius: 10px;
+            }
+
+            /* Mobile selection button */
+            .mobile-select-btn {
+                width: 100%;
+                padding: 15px;
+                background: linear-gradient(135deg, #f5afc9 0%, #c67697 100%);
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-size: 1.1rem;
+                font-weight: bold;
+                cursor: pointer;
+                margin-top: 20px;
+                box-shadow: 0 5px 15px rgba(193, 125, 154, 0.4);
+                transition: all 0.3s;
+            }
+
+            .mobile-select-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(193, 125, 154, 0.6);
+            }
+
+            .mobile-select-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
             }
         }
 
@@ -610,10 +707,88 @@
             box-shadow: 0 5px 15px rgba(186, 153, 197, 0.4);
         }
 
+        /* Scores Popup */
+        .scores-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .scores-popup.active {
+            display: flex;
+        }
+
+        .scores-popup-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .scores-popup-content h3 {
+            color: #c67697;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: #faf8f9;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .score-row .name {
+            color: #c17d9a;
+        }
+
+        .score-row .points {
+            color: #ba99c5;
+            font-weight: bold;
+        }
+
+        .show-scores-btn {
+            background: none;
+            border: 2px solid #c67697;
+            color: #c67697;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+
+        .show-scores-btn:hover {
+            background: #c67697;
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .settings-content {
                 margin: auto;
                 max-height: 90vh;
+            }
+
+            /* Mobile: Settings button full width like others */
+            .settings-btn {
+                width: 100%;
+                justify-content: center;
             }
         }
 
@@ -629,12 +804,15 @@
     <div class="container">
         <!-- HOME SCREEN -->
         <div id="home-screen" class="screen active">
-            <h1>What do you Swift?</h1>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="images/logo.png" alt="What do you Swift?" style="max-width: 300px; width: 80%; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            </div>
+            <p>inizia il gioco</p>
 
             <div id="error-container"></div>
 
             <div class="input-group">
-                <label>Il tuo nome</label>
+                <label>IL TUO NOME</label>
                 <input type="text" id="player-name" placeholder="Inserisci il tuo nome" maxlength="20">
             </div>
 
@@ -645,18 +823,19 @@
             <div class="divider">oppure</div>
 
             <div class="input-group">
-                <label>Codice Partita</label>
-                <input type="text" id="game-code-input" placeholder="Inserisci il codice">
+                <label>CODICE PARTITA</label>
+                <input type="text"  class="btn btn-primary" id="game-code-input" placeholder="Inserisci il codice">
             </div>
 
             <button class="btn btn-secondary" onclick="joinGame()">
-                👥 Unisciti a Partita
+                👥 Unisciti a una Partita
             </button>
 
             <div style="margin-top: 30px; padding: 20px; background: #edc6d5; border-radius: 10px; font-size: 0.9rem; color: #c17d9a;">
                 <strong>ℹ️ Come funziona:</strong><br>
                 • Condividi il codice con gli amici<br>
-                • Minimo 3 giocatori per iniziare
+                • Minimo 3 giocatori per iniziare<br>
+                • il giocatore che crea la partita non dovra uscire dalla pagina
             </div>
         </div>
 
@@ -673,7 +852,7 @@
             <div id="status-container"></div>
 
             <div class="players-list">
-                <h3>Giocatori (<span id="player-count">0</span>)</h3>
+                <h3>GIOCATORI (<span id="player-count">0</span>)</h3>
                 <div id="players-container"></div>
             </div>
 
@@ -686,13 +865,13 @@
             <div id="settings-modal" class="settings-modal" onclick="closeSettingsIfOutside(event)">
                 <div class="settings-content" onclick="event.stopPropagation()">
                     <div class="settings-header">
-                        <h3>⚙️ Impostazioni</h3>
-                        <button class="close-settings" onclick="closeSettings()">×</button>
+                        <h4>⚙️ Impostazioni</h4>
+                        <button class="close-settings" onclick="closeSettings()">X</button>
                     </div>
 
                     <!-- Game Mode -->
                     <div style="margin-bottom: 20px;">
-                        <h4 style="margin-bottom: 10px; color: #c17d9a;">Modalità di Gioco</h4>
+                        <h4 style="margin-bottom: 10px; color: #c17d9a;">MODALITÀ DI GIOCO</h4>
                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #faf8f9; border-radius: 8px; margin-bottom: 10px;">
                             <input type="radio" name="gameMode" value="images" checked onchange="updateGameMode()">
                             <div>
@@ -711,7 +890,7 @@
 
                     <!-- Rounds to Win -->
                     <div>
-                        <h4 style="margin-bottom: 10px; color: #c17d9a;">Punti per Vincere</h4>
+                        <h4 style="margin-bottom: 10px; color: #c17d9a;">PUNTI PER VINCERE</h4>
                         <div style="background: #faf8f9; padding: 15px; border-radius: 8px;">
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <label style="flex: 1;">
@@ -743,7 +922,7 @@
                 🚀 Avvia Partita
             </button>
 
-            <button class="btn" onclick="leaveLobby()" style="background: #c17d9a; color: white;">
+            <button class="btn" onclick="leaveLobby()" style="background: #dc3545; color: white;">
                 ← Torna alla Home
             </button>
         </div>
@@ -752,13 +931,34 @@
         <div id="game-screen" class="screen">
             <div class="game-header">
                 <div class="round-info">
-                    Round <span id="round-num">1</span> | Giudice: <span id="judge-name"></span>
+                    <h2>Round <span id="round-num">1</span> | Giudice: <span id="judge-name"></span></h2>
+                    <button class="show-scores-btn" onclick="toggleScoresPopup()">📊 Punteggi</button>
                 </div>
-                <div class="scores" id="scores-container"></div>
+            </div>
+
+            <!-- Scores Popup -->
+            <div id="scores-popup" class="scores-popup" onclick="toggleScoresPopup()">
+                <div class="scores-popup-content" onclick="event.stopPropagation()">
+                    <h3>📊 Classifica</h3>
+                    <div id="scores-popup-list"></div>
+                    <button class="btn btn-primary" onclick="toggleScoresPopup()" style="margin-top: 20px;">Chiudi</button>
+                </div>
             </div>
 
             <div class="image-container" id="image-container-game" style="display: none;">
-                <img id="current-meme" src="" alt="Meme">
+                <div class="image-flip-container">
+                    <div class="image-flipper" id="image-flipper">
+                        <!-- Front: Logo nascosto -->
+                        <div class="image-front">
+                            <img src="images/WhatDoYouSwift.png" alt="Waiting">
+                            <!--<div class="waiting-text">🤔 In attesa...</div>-->
+                        </div>
+                        <!-- Back: Immagine selezionata -->
+                        <div class="image-back">
+                            <img id="current-meme" src="" alt="Meme">
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="game-content"></div>
@@ -775,10 +975,12 @@
             try {
                 // Load images
                 const imagesResponse = await fetch('images.json');
+                if (!imagesResponse.ok) throw new Error('images.json not found');
                 MEME_IMAGES = await imagesResponse.json();
                 
                 // Load texts
                 const textsResponse = await fetch('texts.json');
+                if (!textsResponse.ok) throw new Error('texts.json not found');
                 TEXT_CARDS = await textsResponse.json();
                 
                 console.log('Game data loaded successfully!');
@@ -786,8 +988,8 @@
                 
                 return true;
             } catch (error) {
-                console.error('Error loading game data:', error);
-                showError('Errore nel caricamento dei dati. Assicurati che images.json e texts.json siano presenti.');
+                console.warn('Could not load JSON files, using embedded data:', error);
+                // Use fallback data immediately
                 return false;
             }
         }
@@ -797,20 +999,48 @@
             const dataLoaded = await loadGameData();
             if (!dataLoaded) {
                 // Fallback to embedded data if files not found
-                console.warn('Using fallback data...');
+                console.log('Using embedded fallback data...');
                 MEME_IMAGES = [
                     { id: 1, url: 'https://i.imgflip.com/30b1gx.jpg', alt: 'Drake Hotline Bling' },
                     { id: 2, url: 'https://i.imgflip.com/1bij.jpg', alt: 'Distracted Boyfriend' },
                     { id: 3, url: 'https://i.imgflip.com/4t0m5.jpg', alt: 'Bernie Sanders' },
                     { id: 4, url: 'https://i.imgflip.com/1ur9b0.jpg', alt: 'Surprised Pikachu' },
-                    { id: 5, url: 'https://i.imgflip.com/26am.jpg', alt: 'One Does Not Simply' }
+                    { id: 5, url: 'https://i.imgflip.com/26am.jpg', alt: 'One Does Not Simply' },
+                    { id: 6, url: 'https://i.imgflip.com/1bhk.jpg', alt: 'Success Kid' },
+                    { id: 7, url: 'https://i.imgflip.com/9ehk.jpg', alt: 'Third World Success' },
+                    { id: 8, url: 'https://i.imgflip.com/1g8my4.jpg', alt: 'Expanding Brain' }
                 ];
                 TEXT_CARDS = [
                     "Quando realizzi che è già lunedì",
                     "La mia vita sociale dopo la quarantena",
                     "Io che cerco di essere produttivo",
                     "Il mio conto in banca",
-                    "Aspettative vs Realtà"
+                    "Aspettative vs Realtà",
+                    "Quando qualcuno ti chiede come stai",
+                    "Il lunedì mattina",
+                    "Io dopo 5 minuti di palestra",
+                    "La mia dieta",
+                    "Quando provi a fare l'adulto responsabile",
+                    "Il weekend che passa troppo veloce",
+                    "Io che cucino",
+                    "Quando arriva lo stipendio",
+                    "Il giorno dopo una festa",
+                    "Io cercando di risparmiare",
+                    "La motivazione che avevo a gennaio",
+                    "Quando ti svegli 5 minuti prima della sveglia",
+                    "Io fingendo di capire",
+                    "Il mio livello di pazienza",
+                    "Quando qualcuno legge i messaggi e non risponde",
+                    "La mia energia alle 3 del pomeriggio",
+                    "Io che provo a socializzare",
+                    "Quando scopri che domani è festa",
+                    "Il mio piano per il futuro",
+                    "Quando ti dicono 'ci vediamo presto'",
+                    "La mia autostima",
+                    "Io alle 2 di notte con fame",
+                    "Quando finalmente è venerdì",
+                    "Il mio senso dell'orientamento",
+                    "Io che provo a svegliarmi presto"
                 ];
             }
         });
@@ -1247,21 +1477,36 @@
             }
             
             const imageContainer = document.getElementById('image-container-game');
-            // Hide image container in text-only mode
-            if (gameState.gameMode === 'textOnly' || !gameState.currentImage) {
+            const imageFlipper = document.getElementById('image-flipper');
+            const isJudge = gameState.players[gameState.judgeIndex].id === myPeerId;
+            
+            // Handle image display based on mode and phase
+            if (gameState.gameMode === 'textOnly') {
                 imageContainer.style.display = 'none';
+            } else if (gameState.phase === 'judge-selecting' && !isJudge) {
+                // Show waiting card (front) while judge is selecting
+                imageContainer.style.display = 'block';
+                if (imageFlipper) {
+                    imageFlipper.classList.remove('flipped');
+                }
             } else if (gameState.currentImage) {
+                // Show selected image (flip to back)
                 document.getElementById('current-meme').src = gameState.currentImage.url;
                 imageContainer.style.display = 'block';
+                if (imageFlipper) {
+                    // Small delay for flip animation
+                    setTimeout(() => {
+                        imageFlipper.classList.add('flipped');
+                    }, 100);
+                }
+            } else {
+                imageContainer.style.display = 'none';
             }
 
-            const scoresContainer = document.getElementById('scores-container');
-            scoresContainer.innerHTML = gameState.players.map(p => 
-                `<span class="score-item">${p.name}: ${p.score || 0}</span>`
-            ).join('');
+            // Update scores popup (hidden by default)
+            updateScoresPopup();
 
             const contentDiv = document.getElementById('game-content');
-            const isJudge = gameState.players[gameState.judgeIndex].id === myPeerId;
 
             if (gameState.phase === 'judge-selecting') {
                 if (isJudge) {
@@ -1291,9 +1536,9 @@
             const isMobile = window.innerWidth <= 768;
             
             if (isMobile) {
-                // Mobile: Swipeable images
+                // Mobile: Swipeable images with selection button
                 const imagesHTML = MEME_IMAGES.map((img, i) => `
-                    <div class="image-card-swipe" onclick="selectJudgeImageMobile(${i})">
+                    <div class="image-card-swipe">
                         <img src="${img.url}" alt="${img.alt}">
                         <p style="margin-top: 10px; font-size: 0.85rem; color: #666; text-align: center;">${img.alt}</p>
                     </div>
@@ -1312,7 +1557,10 @@
                             </div>
                         </div>
                         <div class="swipe-indicators">${dotsHTML}</div>
-                        <div class="swipe-hint">👈 Swipe per cambiare • Tap per selezionare 👉</div>
+                        <div class="swipe-hint">👈 Swipe per cambiare immagine</div>
+                        <button class="mobile-select-btn" onclick="confirmImageSelection()">
+                            ✓ Seleziona Questa Immagine
+                        </button>
                     </div>
                 `;
                 document.getElementById('game-content').innerHTML = html;
@@ -1338,12 +1586,6 @@
             }
         }
 
-        function selectJudgeImageMobile(index) {
-            currentCardIndex = index;
-            updateSwipePosition(300);
-            setTimeout(() => selectJudgeImage(index), 350);
-        }
-
         function selectJudgeImage(index) {
             const selectedImage = MEME_IMAGES[index];
             gameState.currentImage = selectedImage;
@@ -1363,11 +1605,9 @@
             const isMobile = window.innerWidth <= 768;
             
             if (isMobile) {
-                // Mobile: Swipeable cards
+                // Mobile: Swipeable cards with selection button
                 const cardsHTML = gameState.myCards.map((card, i) => `
-                    <button class="card ${gameState.selectedCard === i ? 'selected' : ''}" 
-                            onclick="selectCardMobile(${i})"
-                            ${hasSubmitted ? 'disabled' : ''}>
+                    <button class="card ${hasSubmitted ? 'disabled' : ''}" disabled>
                         ${card}
                     </button>
                 `).join('');
@@ -1386,7 +1626,8 @@
                         </div>
                     </div>
                     <div class="swipe-indicators">${dotsHTML}</div>
-                    ${!hasSubmitted ? '<div class="swipe-hint">👈 Swipe per cambiare carta • Tap per selezionare 👉</div>' : ''}
+                    ${!hasSubmitted ? '<div class="swipe-hint">👈 Swipe per cambiare carta</div>' : ''}
+                    ${!hasSubmitted ? '<button class="mobile-select-btn" onclick="confirmCardSelection()">✓ Seleziona Questa Carta</button>' : ''}
                 `;
                 document.getElementById('game-content').innerHTML = html;
                 
@@ -1467,9 +1708,9 @@
             const isMobile = window.innerWidth <= 768;
             
             if (isMobile) {
-                // Mobile: Swipeable cards
+                // Mobile: Swipeable cards with vote button
                 const cardsHTML = gameState.submissions.map((sub, i) => `
-                    <button class="card" onclick="voteCardMobile(${i})">
+                    <button class="card" disabled>
                         ${sub.card}
                     </button>
                 `).join('');
@@ -1479,14 +1720,15 @@
                 ).join('');
                 
                 const html = `
-                    <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ Scegli il meme migliore:</h3>
+                    <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ SCEGLI IL MEME MIGLIORE:</h3>
                     <div class="cards-grid">
                         <div class="cards-swipe-container">
                             ${cardsHTML}
                         </div>
                     </div>
                     <div class="swipe-indicators">${dotsHTML}</div>
-                    <div class="swipe-hint">👈 Swipe per cambiare • Tap per votare 👉</div>
+                    <div class="swipe-hint">👈 Swipe per cambiare carta</div>
+                    <button class="mobile-select-btn" onclick="confirmVote()">✓ Vota Questa Carta</button>
                 `;
                 document.getElementById('game-content').innerHTML = html;
                 
@@ -1495,7 +1737,7 @@
             } else {
                 // Desktop: Grid layout
                 const html = `
-                    <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ Scegli il meme migliore:</h3>
+                    <h3 style="text-align: center; margin: 20px 0;">👨‍⚖️ SCEGLI IL MEME MIGLIORE:</h3>
                     <div class="cards-grid">
                         ${gameState.submissions.map((sub, i) => `
                             <button class="card" onclick="voteCard(${i})">
@@ -1508,10 +1750,8 @@
             }
         }
 
-        function voteCardMobile(index) {
-            currentCardIndex = index;
-            updateSwipePosition(300);
-            setTimeout(() => voteCard(index), 350);
+        function confirmVote() {
+            voteCard(currentCardIndex);
         }
 
         function voteCard(index) {
@@ -1566,6 +1806,12 @@
 
         function nextRound() {
             if (!isHost) return;
+
+            // Reset image flip animation
+            const imageFlipper = document.getElementById('image-flipper');
+            if (imageFlipper) {
+                imageFlipper.classList.remove('flipped');
+            }
 
             gameState.currentRound++;
             gameState.judgeIndex = Math.floor(Math.random() * gameState.players.length);
@@ -1686,6 +1932,38 @@
             if (confirm('Vuoi davvero lasciare la partita?')) {
                 location.reload();
             }
+        }
+
+        // Scores Popup Functions
+        function toggleScoresPopup() {
+            const popup = document.getElementById('scores-popup');
+            if (popup) {
+                popup.classList.toggle('active');
+            }
+        }
+
+        function updateScoresPopup() {
+            const popupList = document.getElementById('scores-popup-list');
+            if (!popupList) return;
+            
+            // Sort players by score
+            const sortedPlayers = [...gameState.players].sort((a, b) => (b.score || 0) - (a.score || 0));
+            
+            popupList.innerHTML = sortedPlayers.map(p => `
+                <div class="score-row">
+                    <span class="name">${p.name} ${p.id === myPeerId ? '(Tu)' : ''}</span>
+                    <span class="points">${p.score || 0} punti</span>
+                </div>
+            `).join('');
+        }
+
+        // Mobile Selection Confirmation Functions
+        function confirmImageSelection() {
+            selectJudgeImage(currentCardIndex);
+        }
+
+        function confirmCardSelection() {
+            selectCard(currentCardIndex);
         }
 
         // SWIPE FUNCTIONALITY FOR MOBILE
@@ -1836,18 +2114,7 @@
             });
         }
 
-        function selectCardMobile(index) {
-            // Navigate to the card
-            currentCardIndex = index;
-            updateSwipePosition(300);
-            
-            // Wait for animation, then select
-            setTimeout(() => {
-                selectCard(index);
-            }, 350);
-        }
-
-        console.log('Meme Game P2P loaded successfully!');
+        console.log('WhatDoYouSwift loaded successfully!');
     </script>
 </body>
 </html>
