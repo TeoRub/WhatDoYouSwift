@@ -515,8 +515,8 @@
             }
 
             .image-card-swipe {
-                min-width: 90%;
-                max-width: 90%;
+                min-width: 85%;
+                max-width: 85%;
                 margin: 0 7.5%;
                 flex-shrink: 0;
                 cursor: pointer;
@@ -2153,8 +2153,8 @@
             currentX = e.clientX;
             const diff = currentX - startX;
             const cards = swipeContainer.querySelectorAll('.card');
-            const offset = -currentCardIndex * 105.5 + (diff / swipeContainer.offsetWidth) * 100;
-            console.log(offset)
+            const offset = -currentCardIndex * 100 + (diff / swipeContainer.offsetWidth) * 100;
+            
             swipeContainer.style.transform = `translateX(${offset}%)`;
         }
 
